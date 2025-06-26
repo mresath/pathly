@@ -23,7 +23,21 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "78237ace-22c3-425f-82bd-863f68b82451"
+      }
+    },
+    "owner": "mresath",
+    "experiments": {
+      "reactCompiler": true
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "pathly"
   }
 }
