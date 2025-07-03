@@ -7,6 +7,8 @@ import * as React from 'react';
 import { Platform } from 'react-native';
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '~/lib/i18n';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -46,10 +48,12 @@ export default function RootLayout() {
 
   return (
     <React.StrictMode>
-      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-        <Stack />
-      </ThemeProvider>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+          <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+          <Stack />
+        </ThemeProvider>
+      </I18nextProvider>
     </React.StrictMode>
   );
 }
