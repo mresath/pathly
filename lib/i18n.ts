@@ -6,7 +6,7 @@ import ResourcesToBackend from "i18next-resources-to-backend";
 // due to us using react native which has no folder i18n can pull jsons diretly from, we have to manually import all jsons here
 import en from "~/localization/en.json";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as RNLocalize from "react-native-localize";
+import * as Localization from "expo-localization";
 
 //object containing all localization jsons
 export const langResources = {
@@ -20,7 +20,7 @@ i18n
     async: true,
     detect: function (callback: (val: string) => void) {
       AsyncStorage.getItem('language').then((val: string | null) => {
-        const detected = val || RNLocalize.findBestLanguageTag(Object.keys(langResources))?.languageTag || "en";
+        const detected = val || Localization.getLocales()[0].languageCode || "en";
         callback(detected);
       });
     },
@@ -41,18 +41,19 @@ i18n
       useSuspense: false,
     },
     saveMissing: true,
-    missingKeyHandler: () => {},
+    missingKeyHandler: () => { },
     backend: {
       backends: [
         //HttpBackend,
         ResourcesToBackend(langResources)
       ],
-      /*backendOptions: [{
+      backendOptions: [/*{
         loadPath: "{{lng}}/{{ns}}",
         request: (options: object, url: string, payload: object, callback: ((err: Error | null, res: { status: number, data: any } | null) => object)) => {
           
         },
-      }],*/
+      },*/
+      ],
     }
   });
 

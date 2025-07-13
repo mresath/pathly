@@ -1,5 +1,29 @@
 {
     "translation": {
-        
+        "__login__": "__login__",
+        "signInGoogle": "Sign in with Google",
+        "signUp": "SIGN UP",
+        "signIn": "SIGN IN",
+        "email": "Email",
+        "emailPlaceholder": "Email Address",
+        "password": "Password",
+        "passwordPlaceholder": "Password",
+        "login": "Login",
+        "loginWithGoogle": "Login with Google",
+        "forgotPassword": "Forgot Password?",
+        "signInError": "Error Signing In",
+        "signUpError": "Error Signing Up",
+        "googleSignInError": "Error Signing in with Google",
+        "unknownError": "An unknown error occurred. Please try again later.",
+
+        "__home__": "__home__",
+        "home": "Home",
+
+        "__settings__": "__settings__",
+        "settings": "Settings",
+        "logout": "Logout",
+        "userError": "Error Accessing User Data",
+        "logoutError": "Error Logging Out",
+        "loggedInAs": "Logged in as"
     }
 }
