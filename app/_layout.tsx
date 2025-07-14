@@ -10,6 +10,7 @@ import { useColorScheme } from '~/lib/useColorScheme';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from '~/lib/i18n';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AuthProvider from '~/lib/auth';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -52,12 +53,14 @@ export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <GestureHandlerRootView>
-          <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </GestureHandlerRootView>
+        <AuthProvider>
+          <GestureHandlerRootView>
+            <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </GestureHandlerRootView>
+        </AuthProvider>
       </ThemeProvider>
     </I18nextProvider>
   );

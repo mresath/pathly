@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Cog } from '~/lib/icons/Cog';
-import { House } from '~/lib/icons/house';
+import { House } from '~/lib/icons/House';
 
 export default function TabLayout() {
     const { t } = useTranslation();

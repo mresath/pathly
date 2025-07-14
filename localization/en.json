@@ -24,6 +24,12 @@
         "logout": "Logout",
         "userError": "Error Accessing User Data",
         "logoutError": "Error Logging Out",
-        "loggedInAs": "Logged in as"
+        "loggedInAs": "Logged in as",
+        "memberSince": "On the right path since",
+        "updateProfile": "Save Profile",
+        "profileUpdated": "Profile updated successfully",
+        "profileUpdateError": "Error Updating Profile",
+        "imagePickError": "Error picking image",
+        "usernameRequired": "Username is required"
     }
 }

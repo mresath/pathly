@@ -8,7 +8,7 @@ import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import { useColorScheme } from "~/lib/useColorScheme";
-import * as Device from 'expo-device';
+import { Button } from "~/components/ui/button";
 
 const iosClientId = process.env.EXPO_PUBLIC_IOS_CLIENT_ID;
 const androidClientId = process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID;
@@ -80,9 +80,9 @@ export default function AuthPage() {
 
     return (
         <View className="h-full w-full items-center justify-center p-4">
-            <Stack.Screen options={{ headerShown: true, title: t("login") }} />
+            <Stack.Screen name="" options={{ headerShown: true, title: t("login") }} />
             <View className="w-[85%] flex flex-col items-center justify-center">
-                <View className="w-full mb-3 min-h-10 flex justify-center items-center">
+                <View className="w-full mb-3 min-h-12 flex justify-center items-center">
                     <GoogleSigninButton
                         size={GoogleSigninButton.Size.Wide}
                         color={isDarkColorScheme ? GoogleSigninButton.Color.Light : GoogleSigninButton.Color.Dark}
@@ -94,7 +94,7 @@ export default function AuthPage() {
                     value={email}
                     placeholder={t("emailPlaceholder")}
                     autoCapitalize={"none"}
-                    className="w-full mb-1 min-h-10"
+                    className="w-full mb-1 min-h-12"
                 />
                 <Input
                     onChangeText={(text) => setPassword(text)}
@@ -102,26 +102,22 @@ export default function AuthPage() {
                     secureTextEntry={true}
                     placeholder={t("passwordPlaceholder")}
                     autoCapitalize={"none"}
-                    className="w-full mb-3 min-h-10"
+                    className="w-full mb-3 min-h-12"
                 />
-                <View className="w-full mb-1 bg-secondary rounded min-h-10 flex justify-center items-center">
-                    <Pressable
-                        disabled={loading}
-                        onPress={() => signInWithEmail()}
-                        className="w-full"
-                    >
-                        <Text className="text-lg font-bold">{t("signIn")}</Text>
-                    </Pressable>
-                </View>
-                <View className="w-full min-h-10 flex justify-center items-center">
-                    <Pressable
-                        disabled={loading}
+                <Button
+                    disabled={loading}
+                    onPress={() => signInWithEmail()}
+                    className="mb-1 w-full bg-secondary min-h-12"
+                >
+                    <Text className="text-lg font-bold text-foreground">{t("signIn")}</Text>
+                </Button>
+                <Button
+                    disabled={loading}
                         onPress={() => signUpWithEmail()}
-                        className="w-full"
-                    >
-                        <Text className="text-primary text-lg font-bold">{t("signUp")}</Text>
-                    </Pressable>
-                </View>
+                    className="mb-1 w-full bg-transparent min-h-12"
+                >
+                    <Text className="text-lg font-bold text-primary">{t("signUp")}</Text>
+                </Button>
             </View>
         </View>
     );

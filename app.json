@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "pathly",
+    "name": "Pathly",
     "slug": "pathly",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -39,7 +39,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app uses the photo library to allow you to select a profile picture."
+        }
+      ],
+      "react-native-compressor"
     ],
     "scheme": "pathly"
   }
