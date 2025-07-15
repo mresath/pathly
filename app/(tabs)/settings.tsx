@@ -12,6 +12,7 @@ import { Image as Compressor } from 'react-native-compressor';
 import * as FileSystem from 'expo-file-system';
 import { Pressable } from "react-native-gesture-handler";
 import { decode } from 'base64-arraybuffer'
+import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
 
 const userImage = require("~/assets/user.png");
 
@@ -35,7 +36,7 @@ export default function Tab() {
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert(t("logoutError"), error.message);
+      toast.error(t("logoutError"), { position: ToastPosition.BOTTOM });
     }
   }
 
@@ -50,20 +51,18 @@ export default function Tab() {
     if (result && result.assets && result.assets[0].uri) {
       setAvatar(result.assets[0].uri);
     } else {
-      Alert.alert(t("imagePickError"));
+      toast.error(t("imagePickError"), { position: ToastPosition.BOTTOM });
     }
   };
 
   const [saving, setSaving] = useState(false);
   const saveProfile = async () => {
-    if (saving) return;
-    if (!user) return;
+    if (!user) throw new Error();
     setSaving(true);
 
     if (!username.trim()) {
-      Alert.alert(t("usernameRequired"));
       setSaving(false);
-      return;
+      throw new Error(t("usernameRequired"));
     }
 
     var avatarUrl = avatar;
@@ -77,9 +76,8 @@ export default function Tab() {
         contentType: `image/${extension}`,
       });
       if (error) {
-        Alert.alert(t("profileUpdateError"), error.message);
         setSaving(false);
-        return;
+        throw error;
       }
       avatarUrl = `${supabaseUrl}/storage/v1/object/public/avatars/${filename}`;
     }
@@ -92,13 +90,13 @@ export default function Tab() {
         avatar: avatarUrl || null,
       });
 
-    if (error) {
-      Alert.alert(t("profileUpdateError"), error.message);
-    } else {
-      Alert.alert(t("profileUpdated"));
-      await getProfile?.();
-    }
     setSaving(false);
+    if (error) {
+      throw error;
+    } else {
+      setUsername(username.trim());
+      setAvatar(avatarUrl);
+    }
   }
 
   return (
@@ -116,7 +114,21 @@ export default function Tab() {
 
         <Text className="text-foreground mb-5 mt-1">{`${t("memberSince")} ${user ? prettifyTimestamp(user.created_at) : ""}`}</Text>
 
-        <Button className="w-[70%] bg-secondary min-h-12" onPress={() => saveProfile()}>
+        <Button className="w-[70%] bg-secondary min-h-12" onPress={() => {
+          if (!saving) {
+            toast.promise(
+              saveProfile(),
+              {
+                loading: t("updatingProfile"),
+                success: t("updateProfileSuccess"),
+                error: (err: Error) => `${t("updateProfileError")}${err.message ? `: ${err.message}` : ""}`,
+              },
+              {
+                position: ToastPosition.BOTTOM
+              }
+            )
+          }
+        }}>
           <Text className="text-lg font-bold text-white">{t("updateProfile")}</Text>
         </Button>
         <Button className="w-[70%] bg-transparent min-h-12" onPress={() => logout()}>

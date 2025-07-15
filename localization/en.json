@@ -27,9 +27,10 @@
         "loggedInAs": "Logged in as",
         "memberSince": "On the right path since",
         "updateProfile": "Save Profile",
-        "profileUpdated": "Profile updated successfully",
-        "profileUpdateError": "Error Updating Profile",
         "imagePickError": "Error picking image",
-        "usernameRequired": "Username is required"
+        "usernameRequired": "Username is required",
+        "updatingProfile": "Updating profile...",
+        "updateProfileSuccess": "Profile updated successfully",
+        "updateProfileError": "Error updating profile"
     }
 }

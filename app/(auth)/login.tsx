@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import { Input } from '~/components/ui/input';
 import { Text } from '~/components/ui/text';
 import { supabase } from "~/lib/supabase";
@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import { useColorScheme } from "~/lib/useColorScheme";
 import { Button } from "~/components/ui/button";
+import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
 
 const iosClientId = process.env.EXPO_PUBLIC_IOS_CLIENT_ID;
 const androidClientId = process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID;
@@ -36,7 +37,7 @@ export default function AuthPage() {
             password: password,
         });
 
-        if (error) Alert.alert(t("signInError"), error.message);
+        if (error) toast.error(`${t("signInError")}${error.message ? `: ${error.message}` : ""}`, { position: ToastPosition.BOTTOM });
         setLoading(false);
     }
 
@@ -47,7 +48,7 @@ export default function AuthPage() {
             password: password,
         });
 
-        if (error) Alert.alert(t("signUpError"), error.message);
+        if (error) toast.error(`${t("signUpError")}${error.message ? `: ${error.message}` : ""}`, { position: ToastPosition.BOTTOM });
         setLoading(false);
     }
 
@@ -62,7 +63,7 @@ export default function AuthPage() {
                 });
                 console.log(error, data);
             } else {
-                throw new Error('no ID token present!');
+                throw new Error('No ID token present!');
             }
         } catch (error: any) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -73,7 +74,6 @@ export default function AuthPage() {
                 // play services not available or outdated
             } else {
                 // some other error happened
-                //Alert.alert(t("googleSignInError"), error.message || t("unknownError"));
             }
         }
     }
@@ -113,7 +113,7 @@ export default function AuthPage() {
                 </Button>
                 <Button
                     disabled={loading}
-                        onPress={() => signUpWithEmail()}
+                    onPress={() => signUpWithEmail()}
                     className="mb-1 w-full bg-transparent min-h-12"
                 >
                     <Text className="text-lg font-bold text-primary">{t("signUp")}</Text>

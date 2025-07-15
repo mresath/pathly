@@ -11,6 +11,8 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from '~/lib/i18n';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AuthProvider from '~/lib/auth';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Toasts } from '@backpackapp-io/react-native-toast';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -54,12 +56,19 @@ export default function RootLayout() {
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <AuthProvider>
-          <GestureHandlerRootView>
-            <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            </Stack>
-          </GestureHandlerRootView>
+          <SafeAreaProvider>
+            <GestureHandlerRootView>
+              <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              </Stack>
+              <Toasts
+                overrideDarkMode={isDarkColorScheme}
+                globalAnimationType="spring"
+                globalAnimationConfig={{ duration: 300 }}
+              />
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
         </AuthProvider>
       </ThemeProvider>
     </I18nextProvider>
