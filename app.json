@@ -7,11 +7,6 @@
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "image": "./assets/logo.png"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mresath.pathly",
@@ -46,7 +41,19 @@
           "photosPermission": "This app uses the photo library to allow you to select a profile picture."
         }
       ],
-      "react-native-compressor"
+      "react-native-compressor",
+      [
+        "expo-splash-screen",
+        {
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "image": "./assets/logolight.png",
+          "dark": {
+            "backgroundColor": "#0b1713",
+            "image": "./assets/logo.png"
+          }
+        }
+      ]
     ],
     "scheme": "pathly"
   }

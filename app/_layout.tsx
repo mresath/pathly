@@ -10,9 +10,12 @@ import { useColorScheme } from '~/lib/useColorScheme';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from '~/lib/i18n';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AuthProvider from '~/lib/auth';
+import AuthProvider, { useAuth } from '~/lib/auth';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Toasts } from '@backpackapp-io/react-native-toast';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Network from 'expo-network';
+import { useEffect } from 'react';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -28,12 +31,20 @@ export {
   ErrorBoundary,
 } from 'expo-router';
 
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   const hasMounted = React.useRef(false);
-  const { colorScheme, isDarkColorScheme } = useColorScheme();
+  const { isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
-  const { t } = useTranslation();
+  useEffect(() => {
+    Network.getNetworkStateAsync().then(({ isInternetReachable }) => {
+      if (isInternetReachable) {
+        SplashScreen.hideAsync();
+      }
+    });
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -59,9 +70,7 @@ export default function RootLayout() {
           <SafeAreaProvider>
             <GestureHandlerRootView>
               <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              </Stack>
+              <Screens />
               <Toasts
                 overrideDarkMode={isDarkColorScheme}
                 globalAnimationType="spring"
@@ -72,6 +81,26 @@ export default function RootLayout() {
         </AuthProvider>
       </ThemeProvider>
     </I18nextProvider>
+  );
+}
+
+const Screens = () => {
+  const { user, stats } = useAuth();
+  const { t } = useTranslation();
+
+  return (
+    <Stack>
+      <Stack.Protected guard={!!user}>
+        <Stack.Protected guard={!!stats}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/index" options={{ headerShown: true, title: t("settings") }} />
+        </Stack.Protected>
+        <Stack.Screen name="onboarding" options={{ headerShown: true, title: t("onboarding") }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
   );
 }
 

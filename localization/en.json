@@ -31,6 +31,9 @@
         "usernameRequired": "Username is required",
         "updatingProfile": "Updating profile...",
         "updateProfileSuccess": "Profile updated successfully",
-        "updateProfileError": "Error updating profile"
+        "updateProfileError": "Error updating profile",
+        
+        "__onboarding__": "__onboarding__",
+        "onboarding": "Getting Started"
     }
 }

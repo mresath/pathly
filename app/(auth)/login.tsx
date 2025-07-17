@@ -3,13 +3,12 @@ import { View } from "react-native";
 import { Input } from '~/components/ui/input';
 import { Text } from '~/components/ui/text';
 import { supabase } from "~/lib/supabase";
-import { Pressable } from "react-native-gesture-handler";
-import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import { useColorScheme } from "~/lib/useColorScheme";
 import { Button } from "~/components/ui/button";
 import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
+import { Stack } from "expo-router";
 
 const iosClientId = process.env.EXPO_PUBLIC_IOS_CLIENT_ID;
 const androidClientId = process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID;
@@ -87,6 +86,7 @@ export default function AuthPage() {
                         size={GoogleSigninButton.Size.Wide}
                         color={isDarkColorScheme ? GoogleSigninButton.Color.Light : GoogleSigninButton.Color.Dark}
                         onPress={() => signInWithGoogle()}
+                        style={{ width: '100%' }}
                     />
                 </View>
                 <Input
@@ -109,14 +109,14 @@ export default function AuthPage() {
                     onPress={() => signInWithEmail()}
                     className="mb-1 w-full bg-secondary min-h-12"
                 >
-                    <Text className="text-lg font-bold text-foreground">{t("signIn")}</Text>
+                    <Text className="text-lg font-bold text-white">{t("signIn")}</Text>
                 </Button>
                 <Button
                     disabled={loading}
                     onPress={() => signUpWithEmail()}
                     className="mb-1 w-full bg-transparent min-h-12"
                 >
-                    <Text className="text-lg font-bold text-primary">{t("signUp")}</Text>
+                    <Text className="text-lg font-bold text-secondary dark:text-primary">{t("signUp")}</Text>
                 </Button>
             </View>
         </View>
