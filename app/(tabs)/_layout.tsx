@@ -5,18 +5,26 @@ import { House } from '~/lib/icons/House';
 import { Cog } from '~/lib/icons/Cog';
 import { router } from 'expo-router';
 import { useColorScheme } from '~/lib/useColorScheme';
+import { User } from '~/lib/icons/User';
 
 export default function TabLayout() {
     const { t } = useTranslation();
     const { isDarkColorScheme } = useColorScheme();
 
     return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: 'white', headerRight: () => <Pressable onPress={() => router.push('/settings')}><Cog color={isDarkColorScheme ? 'white' : 'black'} /></Pressable> }}>
+        <Tabs screenOptions={{ tabBarActiveTintColor: 'white', headerRight: () => <Pressable className='mr-5' onPress={() => router.push('/settings')}><Cog color={isDarkColorScheme ? 'white' : 'black'} /></Pressable> }}>
             <Tabs.Screen
                 name="index"
                 options={{
                     title: t("home"),
                     tabBarIcon: ({ color }) => <House color={color} />,
+                }}
+            />
+            <Tabs.Screen 
+                name="profile"
+                options={{
+                    title: t("profile"),
+                    tabBarIcon: ({ color }) => <User color={color} />,
                 }}
             />
         </Tabs>

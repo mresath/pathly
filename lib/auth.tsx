@@ -3,6 +3,7 @@ import { supabase } from "./supabase";
 import { Session, User } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import { generateUsername } from "./string";
+import * as SecureStore from 'expo-secure-store';
 
 export interface Profile {
     uid: string;
@@ -23,6 +24,8 @@ export interface Stats {
     lastUpdated: number;
     xp: number;
     level: number;
+    gold: number;
+    gems: number;
     discipline: number;
     physical: number;
     mental: number;
@@ -39,6 +42,7 @@ interface AuthContextType {
     stats?: Stats | null;
     pinfo?: PInfo | null;
     getInfo?: () => Promise<void>;
+    updateStats?: (update: Partial<Omit<Stats, "uid" | "lastUpdated">>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({});
@@ -65,7 +69,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         if (!user) {
             router.replace("/(auth)/login");
         } else {
-            router.replace("/(tabs)/");
+            router.replace("/(tabs)");
 
             const fetchProfile = async () => {
                 const { data, error } = await supabase
@@ -133,6 +137,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             .select()
             .eq("uid", user.id)
             .single();
+
+        const localStats = await SecureStore.getItemAsync(`${user.id}-stats`);
         const { data: statData, error: statError } = await supabase
             .from("stats")
             .select()
@@ -147,7 +153,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         if (statError) {
             console.error("Error fetching stats:", statError);
         } else {
-            setStats(statData);
+            if (localStats) {
+                const parsedStats = JSON.parse(localStats) as Stats;
+                if (parsedStats.lastUpdated > (statData?.lastUpdated || 0)) {
+                    setStats(parsedStats);
+                } else {
+                    setStats(statData);
+                }
+            } else {
+                setStats(statData);
+            }
         }
 
         if (pinfoError || statError) {
@@ -171,6 +186,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             .select()
             .eq("uid", user.id)
             .single();
+
+        const localStats = await SecureStore.getItemAsync(`${user.id}-stats`);
         const { data: statData, error: statError } = await supabase
             .from("stats")
             .select()
@@ -184,10 +201,57 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         }
         if (statError) {
             console.error("Error fetching stats:", statError);
+            if (localStats) {
+                const parsedStats = JSON.parse(localStats) as Stats;
+                setStats(parsedStats);
+            }
         } else {
-            setStats(statData);
+            if (localStats) {
+                const parsedStats = JSON.parse(localStats) as Stats;
+                if (parsedStats.lastUpdated > (statData?.lastUpdated || 0)) {
+                    setStats(parsedStats);
+                } else {
+                    setStats(statData);
+                }
+            } else {
+                setStats(statData);
+            }
         }
     }, [user]);
+
+    const updateStats = useCallback(async (update: Partial<Omit<Stats, "uid" | "lastUpdated">>) => {
+        if (!user) return;
+
+        const newStats = {
+            xp: 0,
+            level: 0,
+            gold: 0,
+            gems: 0,
+            discipline: 0,
+            physical: 0,
+            mental: 0,
+            spiritual: 0,
+            social: 0,
+            skill: 0,
+            ...stats,
+            ...update,
+            uid: user.id,
+            lastUpdated: Math.floor(Date.now() / 1000),
+        }
+
+        setStats(newStats);
+
+        await SecureStore.setItemAsync(`${user.id}-stats`, JSON.stringify(newStats));
+
+        const { error } = await supabase
+            .from("stats")
+            .update(newStats)
+            .eq("uid", user.id);
+
+        if (error) {
+            console.error("Error updating stats:", error);
+        }
+    }, [user, stats]);
 
     return (
         <AuthContext.Provider value={{
@@ -197,7 +261,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             getProfile,
             pinfo,
             stats,
-            getInfo
+            getInfo,
+            updateStats
         }}>
             {children}
         </AuthContext.Provider>

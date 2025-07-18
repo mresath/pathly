@@ -17,6 +17,7 @@ function Input({
         className
       )}
       placeholderClassName={cn('text-muted-foreground', placeholderClassName)}
+      autoCapitalize='none'
       {...props}
     />
   );

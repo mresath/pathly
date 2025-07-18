@@ -16,6 +16,7 @@ import { Toasts } from '@backpackapp-io/react-native-toast';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Network from 'expo-network';
 import { useEffect } from 'react';
+import { PortalHost } from '@rn-primitives/portal';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -71,6 +72,7 @@ export default function RootLayout() {
             <GestureHandlerRootView>
               <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
               <Screens />
+              <PortalHost />
               <Toasts
                 overrideDarkMode={isDarkColorScheme}
                 globalAnimationType="spring"
@@ -91,14 +93,12 @@ const Screens = () => {
   return (
     <Stack>
       <Stack.Protected guard={!!user}>
-        <Stack.Protected guard={!!stats}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="settings/index" options={{ headerShown: true, title: t("settings") }} />
-        </Stack.Protected>
-        <Stack.Screen name="onboarding" options={{ headerShown: true, title: t("onboarding") }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t("home") }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: true, title: t("settings") }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, title: t("onboarding") }} />
       </Stack.Protected>
       <Stack.Protected guard={!user}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false, title: t("login") }} />
       </Stack.Protected>
     </Stack>
   );
