@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import { Session, User } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import { generateUsername } from "./string";
-import * as SecureStore from 'expo-secure-store';
+import { getDate } from "./math";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Profile {
     uid: string;
@@ -138,7 +139,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             .eq("uid", user.id)
             .single();
 
-        const localStats = await SecureStore.getItemAsync(`${user.id}-stats`);
+        const localStats = await AsyncStorage.getItem(`${user.id}-stats`);
         const { data: statData, error: statError } = await supabase
             .from("stats")
             .select()
@@ -187,7 +188,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             .eq("uid", user.id)
             .single();
 
-        const localStats = await SecureStore.getItemAsync(`${user.id}-stats`);
+        const localStats = await AsyncStorage.getItem(`${user.id}-stats`);
         const { data: statData, error: statError } = await supabase
             .from("stats")
             .select()
@@ -236,12 +237,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             ...stats,
             ...update,
             uid: user.id,
-            lastUpdated: Math.floor(Date.now() / 1000),
+            lastUpdated: getDate(),
         }
 
         setStats(newStats);
 
-        await SecureStore.setItemAsync(`${user.id}-stats`, JSON.stringify(newStats));
+        await AsyncStorage.setItem(`${user.id}-stats`, JSON.stringify(newStats));
 
         const { error } = await supabase
             .from("stats")

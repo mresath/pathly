@@ -64,3 +64,5 @@ export const bellCurveInt = (lower: number, upper: number, mean = 50, stdDev = 1
     }
     return tot - rem;
 };
+
+export const getDate = () => Math.floor(Date.now() / 1000);

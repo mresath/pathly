@@ -1,9 +1,8 @@
-import { t } from 'i18next';
-import React, { Dispatch, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { View, Text, ScrollView, DimensionValue, Pressable } from 'react-native'
 import { LineChart, lineDataItem } from "react-native-gifted-charts";
-import { bellCurve, bellCurveInt, range } from '~/lib/math';
+import { bellCurve, bellCurveInt, getDate, range } from '~/lib/math';
 import Slider from '@react-native-community/slider';
 import { useAuth } from '~/lib/auth';
 import { Button } from '~/components/ui/button';
@@ -51,7 +50,7 @@ export default function OnboardingStats() {
 
     setStats({
       uid: user.id,
-      lastUpdated: Math.floor(Date.now() / 1000),
+      lastUpdated: getDate(),
       discipline,
       physical,
       mental,

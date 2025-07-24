@@ -3,6 +3,7 @@ import { router, Stack } from 'expo-router'
 import React, { createContext, Dispatch, SetStateAction, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { PInfo, Stats, useAuth } from '~/lib/auth';
+import { getDate } from '~/lib/math';
 import { supabase } from '~/lib/supabase';
 
 export interface OnboardingData {
@@ -58,7 +59,7 @@ export default function OnboardingLayout() {
       .upsert({
         ...stats,
         uid: user.id,
-        lastUpdated: Math.floor(Date.now() / 1000),
+        lastUpdated: getDate(),
       });
     if (statsError) {
       console.error("Error saving stats:", statsError);
