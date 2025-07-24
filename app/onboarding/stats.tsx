@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useOnboard } from './_layout';
 import { useColorScheme } from '~/lib/useColorScheme';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { Stattype } from '~/lib/types';
 
 export default function OnboardingStats() {
   const { t } = useTranslation();
@@ -133,7 +134,7 @@ export default function OnboardingStats() {
 }
 
 interface BellCurveProps {
-  statname: "discipline" | "physical" | "mental" | "social" | "spiritual" | "skill",
+  statname: Stattype,
   slider: number,
   setSlider: Dispatch<SetStateAction<number>>,
   width: DimensionValue,

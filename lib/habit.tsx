@@ -3,20 +3,50 @@ import { useAuth } from "./auth";
 import { getDate } from "./math";
 import { supabase } from "./supabase";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Stattype } from "./types";
+import { RRule } from 'rrule'
 
-type Activity = {
+type ToImp = Exclude<Stattype, 'discipline'>;
+type ActivityType = 'positive' | 'negative';
+type Difficulty = 1 | 2 | 3 | 4 | 5;
+type ActIcon = string;
+type ActColor = 'red' | 'green' | 'blue' | 'yellow' | 'purple' | 'orange';
+
+export type Activity = {
     id: string;
+    name: string;
+    description: string;
+    icon: ActIcon;
+    color: ActColor;
+    stat1?: ToImp;
+    stat2?: ToImp;
+    type: ActivityType;
+    difficulty: Difficulty;
 };
 
-type Habit = {
+export type Habit = {
     id: string;
+    activityId: string;
+    neglection: boolean;
+    rule: RRule;
+    reminder?: RRule;
+    name?: string;
+    description?: string;
+    icon?: string;
+    color?: ActColor;
 };
 
-type Todo = {
+export type Todo = {
     id: string;
-};
-
-// TODO: Define types
+    activityId: string;
+    neglection: boolean;
+    due: Date;
+    reminder?: Date;
+    name?: string;
+    description?: string;
+    icon?: string;
+    color?: ActColor;
+}
 
 interface HabitContextType {
     activities: Record<string, Activity>;
@@ -38,7 +68,7 @@ interface UserData {
     habits: Record<string, Habit>;
     currentHabits: Record<string, Habit>;
     todos: Record<string, Todo>;
-    habitData: Record<string, any>;
+    habitData: object;
     lastUpdated: number;
 }
 
@@ -124,7 +154,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                     [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
                 ]);
             } else {
-                if (!luData || localData.lastUpdated > luData.lastUpdated) {
+                if (!luData || localData.lastUpdated >= luData.lastUpdated) {
                     setActivities(localData.activities);
                     setHabits(localData.habits);
                     setCurrentHabits(localData.currentHabits);
@@ -132,8 +162,8 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                     setHabitData(localData.habitData);
                     setRemoteLU(localData.lastUpdated);
 
-                    await supabase.from("data").upsert({ uid: user.id, lastUpdated: localData.lastUpdated, data: localData });
-                } else if (localData.lastUpdated < luData.lastUpdated) {
+                    if (luData && localData.lastUpdated > luData.lastUpdated) await supabase.from("data").upsert({ uid: user.id, lastUpdated: localData.lastUpdated, data: localData });
+                } else {
                     const { data } = await supabase.from("data").select("data").eq("uid", user.id).single();
                     if (!data) return;
 
@@ -303,3 +333,11 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
 }
 
 export const useHabit = () => useContext(HabitContext);
+
+export const getIconFromAct = (icon: ActIcon) => {
+    return icon; //TODO
+}
+
+export const getColorFromAct = (color: ActColor) => {
+    return color; //TODO
+}

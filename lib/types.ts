@@ -1,0 +1,1 @@
+export type Stattype = 'discipline' | 'physical' | 'mental' | 'social' | 'spiritual' | 'skill';
