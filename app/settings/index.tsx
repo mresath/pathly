@@ -22,7 +22,7 @@ if (!supabaseUrl) {
   throw new Error('Supabase url and anon key must be defined in environment variables');
 }
 
-export default function Tab() {
+export default function SettingsScreen() {
   const { t } = useTranslation();
   const { user, profile, getProfile } = useAuth();
 

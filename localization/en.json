@@ -19,6 +19,15 @@
         "__home__": "__home__",
         "home": "Home",
 
+        "__habits__": "__habits__",
+        "habits": "Habits",
+
+        "__create__": "__create__",
+        "newAct": "New Activity",
+
+        "__rpg__": "__rpg__",
+        "rpg": "RPG",
+
         "__settings__": "__settings__",
         "settings": "Settings",
         "logout": "Logout",

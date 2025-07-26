@@ -6,13 +6,22 @@ import { Cog } from '~/lib/icons/Cog';
 import { router } from 'expo-router';
 import { useColorScheme } from '~/lib/useColorScheme';
 import { User } from '~/lib/icons/User';
+import { CheckSquare } from '~/lib/icons/CheckSquare';
+import { Gamepad } from '~/lib/icons/Gamepad';
+import TabBar from '~/components/tabbar';
 
 export default function TabLayout() {
     const { t } = useTranslation();
     const { isDarkColorScheme } = useColorScheme();
 
     return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: 'white', headerRight: () => <Pressable className='mr-5' onPress={() => router.push('/settings')}><Cog color={isDarkColorScheme ? 'white' : 'black'} /></Pressable> }}>
+        <Tabs
+            screenOptions={{
+                tabBarActiveTintColor: 'white',
+                headerRight: () => <Pressable className='mr-5' onPress={() => router.push('/settings')}><Cog color={isDarkColorScheme ? 'white' : 'black'} /></Pressable>,
+            }}
+            tabBar={(props) => <TabBar {...props} />}
+        >
             <Tabs.Screen
                 name="index"
                 options={{
@@ -20,7 +29,21 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <House color={color} />,
                 }}
             />
-            <Tabs.Screen 
+            <Tabs.Screen
+                name="habits"
+                options={{
+                    title: t("habits"),
+                    tabBarIcon: ({ color }) => <CheckSquare color={color} />,
+                }}
+            />
+            <Tabs.Screen
+                name="game"
+                options={{
+                    title: t("rpg"),
+                    tabBarIcon: ({ color }) => <Gamepad color={color} />,
+                }}
+            />
+            <Tabs.Screen
                 name="profile"
                 options={{
                     title: t("profile"),
