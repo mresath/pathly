@@ -41,10 +41,11 @@ export default function TabBar(props: BottomTabBarProps) {
                 onLayout={onTabBarLayout}
             >
                 <Animated.View
+                    key="indicator"
                     className="absolute bg-foreground rounded-full"
                     style={[animatedStyle, { height: dimensions.height - 15, width: buttonWidth - 25, top: 7.5 }]}
                 />
-                {state.routes.map((route, index, arr) => {
+                {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
                     const isFocused = state.index === index;
 
@@ -70,17 +71,15 @@ export default function TabBar(props: BottomTabBarProps) {
                     };
 
                     return (
-                        <>
-                            <TabBarButton
-                                key={route.key}
-                                onPress={onPress}
-                                onLongPress={onLongPress}
-                                isFocused={isFocused}
-                                icon={options.tabBarIcon}
-                                label={options.title || route.name}
-                                color={isFocused ? colors.card : colors.text}
-                            />
-                        </>
+                        <TabBarButton
+                            key={route.key}
+                            onPress={onPress}
+                            onLongPress={onLongPress}
+                            isFocused={isFocused}
+                            icon={options.tabBarIcon}
+                            label={options.title || route.name}
+                            color={isFocused ? colors.card : colors.text}
+                        />
                     );
                 })}
             </View>

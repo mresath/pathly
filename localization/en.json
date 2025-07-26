@@ -24,6 +24,9 @@
 
         "__create__": "__create__",
         "newAct": "New Activity",
+        "newActivity": "Activity",
+        "newHabit": "Habit",
+        "newTodo": "Todo",
 
         "__rpg__": "__rpg__",
         "rpg": "RPG",

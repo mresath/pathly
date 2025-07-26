@@ -19,6 +19,16 @@ export default function TabLayout() {
             screenOptions={{
                 tabBarActiveTintColor: 'white',
                 headerRight: () => <Pressable className='mr-5' onPress={() => router.push('/settings')}><Cog color={isDarkColorScheme ? 'white' : 'black'} /></Pressable>,
+                animation: 'shift',
+                transitionSpec: {
+                    animation: "spring",
+                    config: {
+                        stiffness: 1000,
+                        damping: 100,
+                        mass: 3,
+                    },
+                },
+
             }}
             tabBar={(props) => <TabBar {...props} />}
         >
