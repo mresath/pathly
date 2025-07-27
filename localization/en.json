@@ -24,9 +24,16 @@
 
         "__create__": "__create__",
         "newAct": "New Activity",
+        "createAct": "Create Activity",
+        "editAct": "Edit Activity",
+        "editHabit": "Edit Habit",
+        "editTodo": "Edit Todo",
         "newActivity": "Activity",
         "newHabit": "Habit",
         "newTodo": "Todo",
+        "addActivity": "Add New Activity",
+        "deleteActivityConfirmation": "Are you sure you want to delete '{{activity}}'? This action cannot be undone.",
+
 
         "__rpg__": "__rpg__",
         "rpg": "RPG",
@@ -93,6 +100,8 @@
         "social": "Social",
         "spiritual": "Spiritual",
         "skill": "Skill",
-        "profile": "Profile"
+        "profile": "Profile",
+        "edit": "Edit",
+        "areYouSure": "Are you sure?"
     }
 }

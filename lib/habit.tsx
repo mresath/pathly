@@ -5,21 +5,20 @@ import { supabase } from "./supabase";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stattype } from "./types";
 import { RRule } from 'rrule'
+import { DEFAULT_ACTIVITIES } from "./constants";
+import { icons, LucideProps } from 'lucide-react-native';
 
 type ToImp = Exclude<Stattype, 'discipline'>;
 type ActivityType = 'positive' | 'negative';
 type Difficulty = 1 | 2 | 3 | 4 | 5;
-type ActIcon = string;
-type ActColor = 'red' | 'green' | 'blue' | 'yellow' | 'purple' | 'orange';
+type ActIcon = keyof typeof icons;
 
 export type Activity = {
     id: string;
     name: string;
     description: string;
     icon: ActIcon;
-    color: ActColor;
-    stat1?: ToImp;
-    stat2?: ToImp;
+    stats: ToImp[];
     type: ActivityType;
     difficulty: Difficulty;
 };
@@ -33,7 +32,6 @@ export type Habit = {
     name?: string;
     description?: string;
     icon?: string;
-    color?: ActColor;
 };
 
 export type Todo = {
@@ -45,7 +43,6 @@ export type Todo = {
     name?: string;
     description?: string;
     icon?: string;
-    color?: ActColor;
 }
 
 interface HabitContextType {
@@ -72,7 +69,7 @@ interface UserData {
     lastUpdated: number;
 }
 
-const defaultActivities: Record<string, Activity> = {};
+const defaultActivities: Record<string, Activity> = DEFAULT_ACTIVITIES;
 
 const HabitContext = createContext<HabitContextType>({
     activities: defaultActivities,
@@ -114,13 +111,14 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                 `${user.id}-habitData`,
                 `${user.id}-lastUpdated`
             ]).then((data) => {
-                for (const [value] of data) {
+                for (const [key, value] of data) {
                     if (!value) return null;
                 }
 
                 return data.reduce((acc, [key, value]) => {
                     if (value) {
-                        acc[key.split('-')[1]] = JSON.parse(value);
+                        const a = key.split('-');
+                        acc[a[a.length - 1]] = JSON.parse(value);
                     }
                     return acc;
                 }, {} as Record<string, any>) as UserData;
@@ -130,7 +128,10 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             if (luData) setRemoteLU(luData.lastUpdated);
 
             if (!localData) {
-                if (!luData) return;
+                if (!luData) {
+                    updateData();
+                    return;
+                };
 
                 const { data } = await supabase.from("data").select("data").eq("uid", user.id).single();
                 if (!data) return;
@@ -146,7 +147,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                 setRemoteLU(userData.lastUpdated);
 
                 await AsyncStorage.multiSet([
-                    [`${user.id}-activities`, JSON.stringify(userData.activities)],
+                    [`${user.id}-activities`, JSON.stringify(userData.activities || defaultActivities)],
                     [`${user.id}-habits`, JSON.stringify(userData.habits)],
                     [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
                     [`${user.id}-todos`, JSON.stringify(userData.todos)],
@@ -170,7 +171,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                     const userData: UserData = data.data;
                     if (!userData) return;
 
-                    setActivities(userData.activities || {});
+                    setActivities(userData.activities || defaultActivities);
                     setHabits(userData.habits || {});
                     setCurrentHabits(userData.currentHabits || {});
                     setTodos(userData.todos || {});
@@ -249,7 +250,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         }
 
         setUpdateTimeout(createSelfTimeout((600 - (userData.lastUpdated - lu) + 1) * 1000));
-    }
+    };
 
     const setActivity = (activityId: string, activity: Activity) => {
         setActivities((prevActivities) => ({
@@ -334,10 +335,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
 
 export const useHabit = () => useContext(HabitContext);
 
-export const getIconFromAct = (icon: ActIcon) => {
-    return icon; //TODO
-}
-
-export const getColorFromAct = (color: ActColor) => {
-    return color; //TODO
-}
+export const ActivityIcon = (props: { icon: ActIcon } & LucideProps) => {
+    const Icon = icons[props.icon];
+    return <Icon size={props.size} color={props.color} />;
+};

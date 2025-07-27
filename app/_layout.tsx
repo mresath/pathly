@@ -98,6 +98,10 @@ const Screens = () => {
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t("home") }} />
         <Stack.Screen name="create" options={{ headerShown: true, title: t("newAct") }} />
+        <Stack.Screen name="activity/create" options={{ headerShown: true, title: t("createAct") }} />
+        <Stack.Screen name="activity/edit/[id]" options={{ headerShown: true, title: t("editAct") }} />
+        <Stack.Screen name="activity/edit/habit/[id]" options={{ headerShown: true, title: t("editHabit") }} />
+        <Stack.Screen name="activity/edit/todo/[id]" options={{ headerShown: true, title: t("editTodo") }} />
         <Stack.Screen name="settings/index" options={{ headerShown: true, title: t("settings") }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, title: t("onboarding") }} />
       </Stack.Protected>
