@@ -13,3 +13,16 @@ export const prettifyTimestamp = (timestamp: string): string => {
 
     return `${date[2]}/${date[1]}/${date[0]}`;
 }
+
+export const idFromName = (name: string, ids: string[]): string => {
+    const baseId = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    let id = baseId;
+    let counter = 1;
+
+    while (ids.includes(id)) {
+        id = `${baseId}-${counter}`;
+        counter++;
+    }
+
+    return id;
+}

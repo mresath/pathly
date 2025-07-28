@@ -6,12 +6,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stattype } from "./types";
 import { RRule } from 'rrule'
 import { DEFAULT_ACTIVITIES } from "./constants";
-import { icons, LucideProps } from 'lucide-react-native';
+import { icons, LucideIcon, LucideProps } from 'lucide-react-native';
 
-type ToImp = Exclude<Stattype, 'discipline'>;
-type ActivityType = 'positive' | 'negative';
-type Difficulty = 1 | 2 | 3 | 4 | 5;
-type ActIcon = keyof typeof icons;
+export type ToImp = Exclude<Stattype, 'discipline'>;
+export type ActivityType = 'positive' | 'negative';
+export type Difficulty = 1 | 2 | 3 | 4 | 5;
+export type ActIcon = keyof typeof icons;
+
+export const ToImps: ToImp[] = ["physical", "mental", "social", "spiritual", "skill"];
+export const ActivityTypes: ActivityType[] = ['positive', 'negative'];
+export const Difficulties: Difficulty[] = [1, 2, 3, 4, 5];
 
 export type Activity = {
     id: string;
@@ -45,6 +49,15 @@ export type Todo = {
     icon?: string;
 }
 
+export type HabitData = {
+    [date: string]: {
+        calculated: boolean;
+        habits: {
+            [habitId: string]: boolean;
+        }
+    }
+}
+
 interface HabitContextType {
     activities: Record<string, Activity>;
     setActivity: (activityId: string, activity: Activity) => void;
@@ -56,8 +69,8 @@ interface HabitContextType {
     todos: Record<string, Todo>;
     setTodo: (todoId: string, todo: Todo) => void;
     removeTodo: (todoId: string) => void;
-    habitData: Record<string, any>;
-    setHabitData: Dispatch<SetStateAction<Record<string, any>>>;
+    habitData: HabitData;
+    updateHabitData: (habitId: string, value: boolean) => void;
 }
 
 interface UserData {
@@ -65,7 +78,7 @@ interface UserData {
     habits: Record<string, Habit>;
     currentHabits: Record<string, Habit>;
     todos: Record<string, Todo>;
-    habitData: object;
+    habitData: HabitData;
     lastUpdated: number;
 }
 
@@ -83,7 +96,7 @@ const HabitContext = createContext<HabitContextType>({
     setTodo: () => { },
     removeTodo: () => { },
     habitData: {},
-    setHabitData: () => { },
+    updateHabitData: () => { },
 });
 
 export default function HabitProvider({ children }: { children: React.ReactNode }) {
@@ -94,7 +107,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
     const [currentHabits, setCurrentHabits] = useState<Record<string, Habit>>({});
     const [todos, setTodos] = useState<Record<string, Todo>>({});
 
-    const [habitData, setHabitData] = useState({});
+    const [habitData, setHabitData] = useState<HabitData>({});
 
     const [remoteLU, setRemoteLU] = useState<number | null>(null);
     const [updateTimeout, setUpdateTimeout] = useState<number | null>(null);
@@ -313,6 +326,17 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         updateData();
     };
 
+    const updateHabitData = (habitId: string, value: boolean) => {
+        const today = new Date().toLocaleDateString("en-US");
+        setHabitData((prevData) => ({
+            ...prevData,
+            [today]: {
+                ...prevData[today],
+                [habitId]: value,
+            },
+        }));
+    };
+
     return (
         <HabitContext.Provider value={{
             activities,
@@ -326,7 +350,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             setTodo,
             removeTodo,
             habitData,
-            setHabitData,
+            updateHabitData,
         }}>
             {children}
         </HabitContext.Provider>
@@ -339,3 +363,52 @@ export const ActivityIcon = (props: { icon: ActIcon } & LucideProps) => {
     const Icon = icons[props.icon];
     return <Icon size={props.size} color={props.color} />;
 };
+
+export const difficultyColor = (diff: Difficulty) => {
+    switch (diff) {
+        case 1:
+            return "lightgreen";
+        case 2:
+            return "yellow";
+        case 3:
+            return "orange";
+        case 4:
+            return "red";
+        case 5:
+            return "darkred";
+    }
+}
+
+export const statIcon = (stat: Stattype): LucideIcon => {
+    switch (stat) {
+        case "discipline":
+            return icons.CalendarDays;
+        case "physical":
+            return icons.BicepsFlexed;
+        case "mental":
+            return icons.Brain;
+        case "social":
+            return icons.Users;
+        case "spiritual":
+            return icons.Heart;
+        case "skill":
+            return icons.Wrench;
+    }
+}
+
+export const statName = (stat: Stattype): string => {
+    switch (stat) {
+        case "discipline":
+            return "Dsc";
+        case "physical":
+            return "Phy";
+        case "mental":
+            return "Men";
+        case "social":
+            return "Scl";
+        case "spiritual":
+            return "Spr";
+        case "skill":
+            return "Skl";
+    }
+}

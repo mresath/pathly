@@ -33,7 +33,18 @@
         "newTodo": "Todo",
         "addActivity": "Add New Activity",
         "deleteActivityConfirmation": "Are you sure you want to delete '{{activity}}'? This action cannot be undone.",
-
+        "activityCreated": "Activity '{{activity}}' created successfully",
+        "activityEdited": "Activity '{{activity}}' edited successfully",
+        "maxStatsError": "You can only select up to 2 stats for an activity",
+        "selectIcon": "Select Icon",
+        "search": "Search",
+        "noIconsFound": "No results found",
+        "selectActivity": "Select Activity",
+        "tiedActivity": "Connected Activity",
+        "habitCreated": "Habit '{{habit}}' created successfully",
+        "habitEdited": "Habit '{{habit}}' edited successfully",
+        "todoCreated": "Todo '{{todo}}' created successfully",
+        "todoEdited": "Todo '{{todo}}' edited successfully",
 
         "__rpg__": "__rpg__",
         "rpg": "RPG",
@@ -102,6 +113,13 @@
         "skill": "Skill",
         "profile": "Profile",
         "edit": "Edit",
-        "areYouSure": "Are you sure?"
+        "areYouSure": "Are you sure?",
+        "difficulty": "Difficulty",
+        "stats": "Stats",
+        "name": "Name",
+        "description": "Description",
+        "type": "Type",
+        "positive": "Positive",
+        "negative": "Negative"
     }
 }
