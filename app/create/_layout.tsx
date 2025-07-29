@@ -2,7 +2,6 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View, Text } from 'react-native';
-import { router } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { CalendarClock, NotebookPen, Repeat } from 'lucide-react-native';
@@ -58,7 +57,7 @@ const TopBar = ({ state, navigation, descriptors }: BottomTabBarProps) => {
 
     return (
         <View
-            className='bg-card flex-row items-center justify-between py-2'
+            className='bg-card flex-row items-center justify-between py-2 border-b border-border'
         >
             {state.routes.map((route, index) => {
                 const { options } = descriptors[route.key];

@@ -7,6 +7,7 @@ import ResourcesToBackend from "i18next-resources-to-backend";
 import en from "~/localization/en.json";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Localization from "expo-localization";
+import { Settings } from "./settings";
 
 //object containing all localization jsons
 export const langResources = {
@@ -19,7 +20,7 @@ i18n
     name: "languageDetector",
     async: true,
     detect: function (callback: (val: string) => void) {
-      AsyncStorage.getItem('language').then((val: string | null) => {
+      AsyncStorage.getItem(Settings.LANGUAGE).then((val: string | null) => {
         const detected = val || Localization.getLocales()[0].languageCode || "en";
         callback(detected);
       });

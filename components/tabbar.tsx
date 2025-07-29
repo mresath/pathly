@@ -31,7 +31,7 @@ export default function TabBar(props: BottomTabBarProps) {
     return (
         <View className='absolute bottom-8 flex flex-row justify-center items-center gap-4 mx-4'>
             <View
-                className="flex flex-1 flex-row justify-between items-center bg-card rounded-full py-2 elevation-2"
+                className="flex flex-1 flex-row justify-between items-center bg-card rounded-full py-2 elevation-2 border-border border"
                 style={{
                     shadowColor: colors.card,
                     shadowOffset: { width: 0, height: 10 },
@@ -85,7 +85,7 @@ export default function TabBar(props: BottomTabBarProps) {
             </View>
 
             <Pressable
-                className='h-full aspect-square w-auto bg-card rounded-full flex items-center justify-center elevation-2'
+                className='h-full aspect-square w-auto bg-card rounded-full flex items-center justify-center elevation-2 border border-border'
                 onPress={() => router.push('/create')}
             >
                 <Plus

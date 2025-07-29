@@ -2,11 +2,11 @@ import { Activity } from "./habit";
 
 export const NAV_THEME = {
   light: {
-    background: '#FFFFFF', // background
+    background: '#ffffff', // background
     border: 'hsl(240 5.9% 90%)', // border
     card: 'hsl(0 0% 100%)', // card
     notification: 'hsl(0 84.2% 60.2%)', // destructive
-    primary: '#efea5a', // primary
+    primary: 'hsl(43 90% 54%)', // primary
     text: '#0b1713', // foreground
   },
   dark: {

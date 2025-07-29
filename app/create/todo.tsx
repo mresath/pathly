@@ -18,6 +18,12 @@ import { range } from '~/lib/math';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
 import { FlatList } from 'react-native-gesture-handler';
+import DatePicker from 'react-native-date-picker';
+import { NAV_THEME } from '~/lib/constants';
+import { Checkbox } from '~/components/ui/checkbox';
+import { XCircle } from '~/lib/icons/XCircle';
+import { Info } from '~/lib/icons/Info';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 
 export default function Create() {
   const { activities, todos, setTodo } = useHabit();
@@ -32,7 +38,7 @@ export default function Create() {
   const [description, setDescription] = useState(activity?.description || "");
   const [icon, setIcon] = useState<ActIcon>(activity?.icon || "Activity");
   const [neglection, setNeglection] = useState<boolean>(true);
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(new Date(new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 5) * 5, 0) + 24 * 60 * 60 * 1000)));
   const [reminder, setReminder] = useState<Date>();
 
   useEffect(() => {
@@ -69,8 +75,6 @@ export default function Create() {
   const left = (Math.ceil((page - (pagesDisplayed + 1)) / pagesDisplayed) - 1) * pagesDisplayed + (pagesDisplayed + 1) + 1;
 
   const handleSubmit = () => {
-    if (!date) return;
-
     const id = idFromName(name, Object.keys(todos));
     const newTodo: Todo = {
       id: idFromName(name, Object.keys(todos)),
@@ -84,11 +88,45 @@ export default function Create() {
     };
     setTodo(id, newTodo);
     router.dismiss();
-    toast.success(t("habitCreated").replace("{{habit}}", name), { position: ToastPosition.BOTTOM });
+    toast.success(t("todoCreated").replace("{{todo}}", name), { position: ToastPosition.BOTTOM });
   }
 
+  const [dateOpen, setDateOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
+ 
   return (
     <View className='p-4 flex flex-col h-full items-center'>
+      <DatePicker 
+        modal
+        open={dateOpen}
+        date={date}
+        onConfirm={(date) => {
+          setDate(new Date(date.setSeconds(0)));
+          setReminder(undefined);
+          setDateOpen(false);
+        }}
+        onCancel={() => setDateOpen(false)}
+        mode="datetime"
+        minuteInterval={5}
+        minimumDate={new Date()}
+        maximumDate={new Date(date.getTime() + 365 * 24 * 60 * 60 * 1000)}
+        title={null}
+      />
+      <DatePicker 
+        modal
+        open={reminderOpen}
+        date={reminder || new Date(date.getTime() - 24 * 60 * 60 * 1000)}
+        onConfirm={(date) => {
+          setReminder(new Date(date.setSeconds(0)));
+          setReminderOpen(false);
+        }}
+        onCancel={() => setReminderOpen(false)}
+        mode="datetime"
+        minuteInterval={5}
+        minimumDate={new Date()}
+        maximumDate={date}
+        title={null}
+      />
       <Text className='text-center text-2xl text-foreground font-bold mb-2'>{t("tiedActivity")}</Text>
       <View className='w-full flex-row items-center justify-between'>
         <Select
@@ -277,12 +315,47 @@ export default function Create() {
         </View>
       </View>
 
-      {/* TODO: add date and reminder */}
+      <View className='flex-row items-center mt-4'>
+        <Text className='text-foreground text-xl font-semibold'>{t("due")} </Text>
+        <Pressable onPress={() => setDateOpen(true)}>
+          <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{date.toLocaleString()}</Text>
+        </Pressable>
+      </View>
+
+      {reminder ? (
+        <View className='flex-row items-center mt-4'>
+          <Text className='text-foreground text-xl font-semibold'>{t("reminderOn")} </Text>
+          <Pressable onPress={() => setReminderOpen(true)}>
+            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{reminder.toLocaleTimeString()}</Text>
+          </Pressable>
+          <Pressable className='ml-2' onPress={() => setReminder(undefined)}>
+            <XCircle color={iconColor} size={20} />
+          </Pressable>
+        </View>
+      ) : (
+        <View className='flex-row items-center mt-4'>
+          <Pressable onPress={() => setReminderOpen(true)}>
+            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{t("setReminder")}</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View className='flex-row items-center mt-4'>
+        <Text className='text-foreground text-xl font-semibold mr-1'>{t("neglection")}</Text>
+        <Popover>
+          <PopoverTrigger>
+            <Info size={20} color={iconColor} />
+          </PopoverTrigger>
+          <PopoverContent>
+            <Text className='text-foreground'>{t("neglectionInfo")}</Text>
+          </PopoverContent>
+        </Popover>
+        <Checkbox className='ml-5' checked={neglection} onCheckedChange={setNeglection} />
+      </View>
 
       <Button
         className='w-full mt-auto mb-10 bg-secondary'
         onPress={handleSubmit}
-        disabled={!activityId || !date}
       >
         <Text className='text-white'>
           {t("done")}

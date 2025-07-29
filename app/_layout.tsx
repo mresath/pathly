@@ -18,6 +18,7 @@ import * as Network from 'expo-network';
 import { useEffect } from 'react';
 import { PortalHost } from '@rn-primitives/portal';
 import HabitProvider from '~/lib/habit';
+import SettingsProvider from '~/lib/settings';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -68,22 +69,24 @@ export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <AuthProvider>
-          <HabitProvider>
-            <SafeAreaProvider>
-              <GestureHandlerRootView>
-                <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-                <Screens />
-                <PortalHost />
-                <Toasts
-                  overrideDarkMode={isDarkColorScheme}
-                  globalAnimationType="spring"
-                  globalAnimationConfig={{ duration: 300 }}
-                />
-              </GestureHandlerRootView>
-            </SafeAreaProvider>
-          </HabitProvider>
-        </AuthProvider>
+        <SettingsProvider>
+          <AuthProvider>
+            <HabitProvider>
+              <SafeAreaProvider>
+                <GestureHandlerRootView>
+                  <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+                  <Screens />
+                  <PortalHost />
+                  <Toasts
+                    overrideDarkMode={isDarkColorScheme}
+                    globalAnimationType="spring"
+                    globalAnimationConfig={{ duration: 300 }}
+                  />
+                </GestureHandlerRootView>
+              </SafeAreaProvider>
+            </HabitProvider>
+          </AuthProvider>
+        </SettingsProvider>
       </ThemeProvider>
     </I18nextProvider>
   );

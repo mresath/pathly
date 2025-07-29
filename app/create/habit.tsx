@@ -19,6 +19,9 @@ import { RRule } from 'rrule';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
 import { FlatList } from 'react-native-gesture-handler';
+import { Checkbox } from '~/components/ui/checkbox';
+import { Popover, PopoverTrigger, PopoverContent } from '~/components/ui/popover';
+import { Info } from '~/lib/icons/Info';
 
 export default function Create() {
   const { activities, habits, setHabit } = useHabit();
@@ -279,6 +282,19 @@ export default function Create() {
       </View>
 
       {/* TODO: add rule and reminder */}
+
+      <View className='flex-row items-center mt-4'>
+        <Text className='text-foreground text-xl font-semibold mr-1'>{t("neglection")}</Text>
+        <Popover>
+          <PopoverTrigger>
+            <Info size={20} color={iconColor} />
+          </PopoverTrigger>
+          <PopoverContent>
+            <Text className='text-foreground'>{t("neglectionInfo")}</Text>
+          </PopoverContent>
+        </Popover>
+        <Checkbox className='ml-5' checked={neglection} onCheckedChange={setNeglection} />
+      </View>
 
       <Button
         className='w-full mt-auto mb-10 bg-secondary'

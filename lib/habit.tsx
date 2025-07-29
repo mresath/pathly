@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction, createContext, useEffect, useContext } from "react"
+import { useState, createContext, useEffect, useContext } from "react"
 import { useAuth } from "./auth";
 import { getDate } from "./math";
 import { supabase } from "./supabase";
@@ -35,7 +35,7 @@ export type Habit = {
     reminder?: RRule;
     name?: string;
     description?: string;
-    icon?: string;
+    icon?: ActIcon;
 };
 
 export type Todo = {
@@ -46,7 +46,7 @@ export type Todo = {
     reminder?: Date;
     name?: string;
     description?: string;
-    icon?: string;
+    icon?: ActIcon;
 }
 
 export type HabitData = {

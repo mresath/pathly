@@ -4,15 +4,23 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "~/lib/auth";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
-import { prettifyTimestamp } from "~/lib/string";
+import { LANGUAGES, prettifyTimestamp } from "~/lib/string";
 import { Input } from "~/components/ui/input";
 import { useEffect, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import { Image as Compressor } from 'react-native-compressor';
 import * as FileSystem from 'expo-file-system';
-import { Pressable } from "react-native-gesture-handler";
+import { FlatList, Pressable } from "react-native-gesture-handler";
 import { decode } from 'base64-arraybuffer'
 import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
+import { Separator } from "~/components/ui/separator";
+import { ToggleGroup, ToggleGroupIcon, ToggleGroupItem } from "~/components/ui/toggle-group";
+import { Settings, useSettings } from "~/lib/settings";
+import { Sun } from "~/lib/icons/Sun";
+import { Moon } from "~/lib/icons/Moon";
+import { Cog } from "~/lib/icons/Cog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { langResources } from "~/lib/i18n";
 
 const userImage = require("~/assets/user.png");
 
@@ -24,7 +32,8 @@ if (!supabaseUrl) {
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { user, profile, getProfile } = useAuth();
+  const { user, profile } = useAuth();
+  const { settings, setSetting } = useSettings();
 
   const [username, setUsername] = useState(profile?.username || "");
   const [avatar, setAvatar] = useState(profile?.avatar || "");
@@ -102,7 +111,73 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="w-full h-full flex items-center justify-center">
       <View className="w-[85%] flex flex-col items-center justify-center">
-        <View className="w-[70%] aspect-square h-auto mb-2 bg-secondary rounded-full p-2">
+        <View>
+          <Text className="text-2xl text-foreground font-semibold text-center mb-2 underline">{t("theme")}</Text>
+          <ToggleGroup
+            value={settings[Settings.DARK_MODE]}
+            onValueChange={(value?: string) => {
+              if (!value) return;
+              setSetting(Settings.DARK_MODE, value);
+            }}
+            type="single"
+          >
+            <ToggleGroupItem value="light" className="border-2 border-border">
+              <ToggleGroupIcon icon={Sun} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="dark" className="border-2 border-border">
+              <ToggleGroupIcon icon={Moon} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="system" className="border-2 border-border">
+              <ToggleGroupIcon icon={Cog} />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </View>
+
+        <View className="mt-4">
+          <Text className="text-2xl text-foreground font-semibold text-center mb-2 underline">{t("language")}</Text>
+          <Select
+            defaultValue={{
+              value: settings[Settings.LANGUAGE],
+              label:  settings[Settings.LANGUAGE] === "system" ? t("system") : LANGUAGES[settings[Settings.LANGUAGE]],
+            }}
+            value={{
+              value: settings[Settings.LANGUAGE],
+              label: settings[Settings.LANGUAGE] === "system" ? t("system") : LANGUAGES[settings[Settings.LANGUAGE]],
+            }}
+            onValueChange={(value) => {
+              setSetting(Settings.LANGUAGE, value?.value || "system");
+            }}
+            className="w-48"
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={t("selectLanguage")}
+                className="text-foreground"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <FlatList
+                data={[["system"], ...Object.entries(langResources)]}
+                renderItem={({ item }) => (
+                  <SelectItem
+                    value={item[0]}
+                    label={item[0] === "system" ? t("system") : LANGUAGES[item[0]]}
+                    className="text-foreground"
+                  >
+                    {item[0] === "system" ? t("system") : LANGUAGES[item[0]]}
+                  </SelectItem>
+                )}
+                keyExtractor={(item) => item[0]}
+              />
+            </SelectContent>
+          </Select>
+        </View>
+
+        <Separator className="my-4" />
+
+        <Text className="text-2xl text-foreground font-semibold text-center mb-2 underline">{t("account")}</Text>
+
+        <View className="w-[70%] aspect-square h-auto mb-2 bg-border rounded-full p-[0.325rem]">
           <Pressable onPress={() => pickImage()}>
             <Avatar alt={profile?.username ? `${profile.username}'s Avatar` : "User Avatar"} className="w-full h-full">
               <AvatarImage source={avatar ? { uri: avatar } : userImage} className="w-full" />
