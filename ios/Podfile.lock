@@ -1472,7 +1472,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-date-picker (5.0.13):
+  - react-native-date-picker (5.0.12):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2619,7 +2619,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: afe4318e7cd406124790a95a709eb8249e1e07de
   React-microtasksnativemodule: ccf9156087d87199fa6f663f305475a86a2d58ab
   react-native-compressor: 17c22a41637e930387d9dc84ea42deb33d051f3b
-  react-native-date-picker: 3f997d3f1313adc1cd2bd8bc21d872cf012a2322
+  react-native-date-picker: ffb59a0dd7d3a1e78795c738c8dea68b90b18389
   react-native-safe-area-context: 00d03dc688ba86664be66f9e3f203fc7d747d899
   react-native-slider: c4c1a975352113af59b59dc783abc111618ec37a
   React-NativeModulesApple: 279a49b2ced572badcde3dfb46cf7ebe28287eb1
@@ -2662,6 +2662,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: a6cb833e04fb8c59a012b49fb1d040fcb0cbb633
 
-PODFILE CHECKSUM: 735e4360c51a1e633a4c41a0cc76dfd682854595
+PODFILE CHECKSUM: 29e3053c24b7c4391624c84d8333831ede95d7f7
 
 COCOAPODS: 1.16.2

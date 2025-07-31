@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { Input } from '~/components/ui/input'
 import { ActIcon, ActivityType, Difficulty, ToImp, useHabit, ActivityIcon, Activity, difficultyColor, ToImps, Difficulties, statIcon, statName } from '~/lib/habit';
 import { useColorScheme } from '~/lib/useColorScheme';
-import { idFromName } from '~/lib/string';
 import { router, useLocalSearchParams } from 'expo-router';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';

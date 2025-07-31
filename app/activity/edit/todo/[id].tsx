@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Input } from '~/components/ui/input'
 import { ActIcon, useHabit, ActivityIcon, Todo } from '~/lib/habit';
 import { useColorScheme } from '~/lib/useColorScheme';
-import { idFromName } from '~/lib/string';
 import { router, useLocalSearchParams } from 'expo-router';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { useTranslation } from 'react-i18next';
@@ -109,8 +108,8 @@ export default function Create() {
         onCancel={() => setDateOpen(false)}
         mode="datetime"
         minuteInterval={5}
-        minimumDate={new Date()}
-        maximumDate={new Date(date.getTime() + 365 * 24 * 60 * 60 * 1000)}
+        minimumDate={new Date(new Date().setMinutes(Math.ceil(new Date().getMinutes() / 5) * 5, 0))}
+        maximumDate={new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)}
         title={null}
       />
       <DatePicker 
@@ -124,7 +123,7 @@ export default function Create() {
         onCancel={() => setReminderOpen(false)}
         mode="datetime"
         minuteInterval={5}
-        minimumDate={new Date()}
+        minimumDate={new Date(new Date().setMinutes(Math.ceil(new Date().getMinutes() / 5) * 5, 0))}
         maximumDate={date}
         title={null}
       />

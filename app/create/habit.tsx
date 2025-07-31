@@ -15,13 +15,17 @@ import { ChevronLeft } from '~/lib/icons/ChevronLeft';
 import { ChevronRight } from '~/lib/icons/ChevronRight';
 import { Cog } from '~/lib/icons/Cog';
 import { range } from '~/lib/math';
-import { RRule } from 'rrule';
+import { ByWeekday, RRule, Weekday, WeekdayStr } from 'rrule';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
 import { FlatList } from 'react-native-gesture-handler';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Popover, PopoverTrigger, PopoverContent } from '~/components/ui/popover';
 import { Info } from '~/lib/icons/Info';
+import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
+import { today } from '~/lib/utils';
+import { XCircle } from '~/lib/icons/XCircle';
+import DatePicker from 'react-native-date-picker';
 
 export default function Create() {
   const { activities, habits, setHabit } = useHabit();
@@ -36,8 +40,52 @@ export default function Create() {
   const [description, setDescription] = useState(activity?.description || "");
   const [icon, setIcon] = useState<ActIcon>(activity?.icon || "Activity");
   const [neglection, setNeglection] = useState<boolean>(true);
-  const [rule, setRule] = useState<RRule>();
-  const [reminder, setReminder] = useState<RRule>();
+  const [radioValue, setRadioValue] = useState<string>("repeat");
+  const [repeat, setRepeat] = useState(1);
+  const [on, setOn] = useState<Record<string, boolean>>({
+    MO: false,
+    TU: false,
+    WE: false,
+    TH: false,
+    FR: false,
+    SA: false,
+    SU: false,
+  });
+  const rule = useMemo(() => {
+    if (radioValue === "repeat") {
+      return new RRule({
+        dtstart: today(),
+        freq: RRule.DAILY,
+        interval: repeat,
+      });
+    } else if (radioValue === "on") {
+      return new RRule({
+        dtstart: today(),
+        freq: RRule.DAILY,
+        interval: 1,
+        byweekday: Object.entries(on).reduce((acc, [day, checked]) => {
+          if (checked) {
+            acc.push(Weekday.fromStr(day as WeekdayStr));
+          }
+          return acc;
+        }, [] as ByWeekday[]),
+      });
+    }
+    return new RRule({
+      dtstart: today(),
+      freq: RRule.DAILY,
+      interval: 1,
+    });
+  }, [repeat, on, radioValue]);
+  const [remTime, setRemTime] = useState<Date>();
+  const reminder = useMemo(() => {
+    if (!remTime) return undefined;
+    return new RRule({
+      ...rule.options,
+      byhour: remTime.getHours(),
+      byminute: remTime.getMinutes(),
+    });
+  }, [remTime, rule]);
 
   useEffect(() => {
     setName(activity?.name || t("newAct"));
@@ -91,8 +139,24 @@ export default function Create() {
     toast.success(t("habitCreated").replace("{{habit}}", name), { position: ToastPosition.BOTTOM });
   }
 
+  const [reminderOpen, setReminderOpen] = useState(false);
+
   return (
     <View className='p-4 flex flex-col h-full items-center'>
+      <DatePicker
+        modal
+        open={reminderOpen}
+        date={remTime || new Date(new Date().setMinutes(Math.round(new Date().getMinutes() / 5) * 5, 0))}
+        onConfirm={(date) => {
+          setRemTime(date);
+          setReminderOpen(false);
+        }}
+        onCancel={() => setReminderOpen(false)}
+        mode="time"
+        minuteInterval={5}
+        title={null}
+      />
+
       <Text className='text-center text-2xl text-foreground font-bold mb-2'>{t("tiedActivity")}</Text>
       <View className='w-full flex-row items-center justify-between'>
         <Select
@@ -281,7 +345,81 @@ export default function Create() {
         </View>
       </View>
 
-      {/* TODO: add rule and reminder */}
+
+      <View className='flex-col items-center mt-4'>
+        <RadioGroup value={radioValue} onValueChange={setRadioValue}>
+          <View className='flex-row items-center'>
+            <RadioGroupItem value='repeat' />
+            <View className='flex-row items-center gap-2 ml-3'>
+              <Text className='text-foreground'>{t("every")}</Text>
+              <Select
+                defaultValue={{
+                  value: repeat.toString(),
+                  label: repeat.toString()
+                }}
+                value={{
+                  value: repeat.toString(),
+                  label: repeat.toString()
+                }}
+                onValueChange={(value) => {
+                  setRepeat(parseInt(value?.value || "1"));
+                  setRadioValue("repeat");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={"1"} className='text-foreground font-semibold' />
+                </SelectTrigger>
+                <SelectContent>
+                  {range(1, 8).map((i) => (
+                    <SelectItem key={i} value={i.toString()} label={i.toString()} className='text-foreground font-semibold' />
+                  ))}
+                </SelectContent>
+              </Select>
+              <Text className='text-foreground'>{repeat === 1 ? t("day") : t("days")}</Text>
+            </View>
+          </View>
+
+          <View className='flex-row items-center mt-2'>
+            <RadioGroupItem value='on' />
+            <View className='flex-row items-center ml-3'>
+              <Text className='text-foreground'>{t("on")}</Text>
+              <View className='gap-2 flex-row ml-4'>
+                {Object.keys(on).map((day) => (
+                  <View key={day} className='flex-col items-center gap-1'>
+                    <Checkbox checked={on[day]} onCheckedChange={(checked) => {
+                      setOn((prev) => ({ ...prev, [day]: checked }));
+                      setRadioValue("on");
+                    }} />
+                    <Text className='text-foreground font-semibold'>{t(day)}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        </RadioGroup>
+      </View>
+
+      {remTime ? (
+        <View className='flex-row items-center mt-4'>
+          <Text className='text-foreground text-xl font-semibold'>{t("reminderOn")} </Text>
+          <Pressable onPress={() => setReminderOpen(true)}>
+            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{remTime.toLocaleTimeString(undefined, {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: false,
+            })}</Text>
+          </Pressable>
+          <Pressable className='ml-2' onPress={() => setRemTime(undefined)}>
+            <XCircle color={iconColor} size={20} />
+          </Pressable>
+        </View>
+      ) : (
+        <View className='flex-row items-center mt-4'>
+          <Pressable onPress={() => setReminderOpen(true)}>
+            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{t("setReminder")}</Text>
+          </Pressable>
+        </View>
+      )}
 
       <View className='flex-row items-center mt-4'>
         <Text className='text-foreground text-xl font-semibold mr-1'>{t("neglection")}</Text>

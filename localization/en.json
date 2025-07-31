@@ -50,6 +50,10 @@
         "setReminder": "Set Reminder",
         "neglection": "Neglection",
         "neglectionInfo": "If you don't complete a task with neglection enabled, it will have a negative impact on your stats. We recommend using this to reinforce discipline and avoid procrastination.",
+        "every": "Every",
+        "day": "Day",
+        "days": "Days",
+        "on": "On",
 
         "__rpg__": "__rpg__",
         "rpg": "RPG",
@@ -130,6 +134,13 @@
         "description": "Description",
         "type": "Type",
         "positive": "Positive",
-        "negative": "Negative"
+        "negative": "Negative",
+        "MO": "MO",
+        "TU": "TU",
+        "WE": "WE",
+        "TH": "TH",
+        "FR": "FR",
+        "SA": "SA",
+        "SU": "SU"
     }
 }
