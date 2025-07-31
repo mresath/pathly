@@ -147,3 +147,13 @@ export const DEFAULT_ACTIVITIES: Record<string, Activity> = {
     difficulty: 4,
   },
 }
+
+export const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: false,
+}

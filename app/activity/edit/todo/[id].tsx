@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Separator } from '~/components/ui/separator';
 import { FlatList } from 'react-native-gesture-handler';
 import DatePicker from 'react-native-date-picker';
-import { NAV_THEME } from '~/lib/constants';
+import { DATE_OPTIONS, NAV_THEME } from '~/lib/constants';
 import { Checkbox } from '~/components/ui/checkbox';
 import { XCircle } from '~/lib/icons/XCircle';
 import { Info } from '~/lib/icons/Info';
@@ -319,7 +319,7 @@ export default function Create() {
       <View className='flex-row items-center mt-4'>
         <Text className='text-foreground text-xl font-semibold'>{t("due")} </Text>
         <Pressable onPress={() => setDateOpen(true)}>
-          <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{date.toLocaleString()}</Text>
+          <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{date.toLocaleString(undefined, DATE_OPTIONS)}</Text>
         </Pressable>
       </View>
 
@@ -327,7 +327,7 @@ export default function Create() {
         <View className='flex-row items-center mt-4'>
           <Text className='text-foreground text-xl font-semibold'>{t("reminderOn")} </Text>
           <Pressable onPress={() => setReminderOpen(true)}>
-            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{reminder.toLocaleTimeString()}</Text>
+            <Text className='text-secondary dark:text-primary text-xl font-semibold underline'>{reminder.toLocaleString(undefined, DATE_OPTIONS)}</Text>
           </Pressable>
           <Pressable className='ml-2' onPress={() => setReminder(undefined)}>
             <XCircle color={iconColor} size={20} />
