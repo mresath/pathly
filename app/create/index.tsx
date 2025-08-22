@@ -15,7 +15,7 @@ import { router } from 'expo-router';
 
 
 export default function Tab() {
-  const { activities, removeActivity } = useHabit();
+  const { activities, removeActivity, logActivity } = useHabit();
   const { t } = useTranslation();
   const { isDarkColorScheme } = useColorScheme();
   const iconColor = isDarkColorScheme ? "white" : "black";
@@ -28,7 +28,10 @@ export default function Tab() {
           <View key={item.key} className={`w-full ${item.index < item.length - 1 ? "border-b border-border" : ""} p-4 flex-row items-center gap-2`}>
             <ActivityIcon icon={activity.icon} size={20} color={iconColor} />
             <Text className='text-foreground text-lg'>{activity.name}</Text>
-            <Pressable style={{ marginLeft: 'auto' }}>
+            <Pressable style={{ marginLeft: 'auto' }} onPress={() => {
+              logActivity(activity.id);
+              router.back();
+            }}>
               <Scan size={20} color={iconColor} />
             </Pressable>
             <DropdownMenu>

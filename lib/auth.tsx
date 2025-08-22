@@ -44,6 +44,13 @@ interface AuthContextType {
     pinfo?: PInfo | null;
     getInfo?: () => Promise<void>;
     updateStats?: (update: Partial<Omit<Stats, "uid" | "lastUpdated">>) => Promise<void>;
+    addGold?: (amount: number) => number;
+    addXP?: (amount: number) => {
+        xp: number;
+        level: number;
+    };
+    increaseStat?: (stat: keyof Omit<Stats, "uid" | "lastUpdated" | "xp" | "level" | "gold" | "gems">, scale: number) => number;
+    decreaseStat?: (stat: keyof Omit<Stats, "uid" | "lastUpdated" | "xp" | "level" | "gold" | "gems">, scale: number) => number;
 };
 
 const AuthContext = createContext<AuthContextType>({});
@@ -254,6 +261,48 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         }
     }, [user, stats]);
 
+    const addGold = useCallback((amount: number) => {
+        return Math.max(0, (stats?.gold || 0) + amount);
+    }, [stats]);
+
+    const addXP = useCallback((amount: number) => {
+        const a1 = 5;
+        const step = 5;
+        const base = (a1 * Math.pow((stats?.level || 0) + 1, 1.15))
+        const levelThreshold = Math.round(base / step) * step;
+        const newXP = Math.max(0, (stats?.xp || 0) + amount);
+        if (newXP >= levelThreshold) {
+            const excessXP = newXP - levelThreshold;
+            return {
+                xp: excessXP,
+                level: (stats?.level || 0) + 1,
+            }
+        } else {
+            return {
+                xp: newXP,
+                level: stats?.level || 0,
+            }
+        }
+    }, [stats]);
+
+    const increaseStat = useCallback((stat: keyof Omit<Stats, "uid" | "lastUpdated" | "xp" | "level" | "gold" | "gems">, scale: number) => {
+        const value = stats ? stats[stat] : 1;
+        const maxGain = 2.5;
+        const maxScale = 5;
+        const powerCorrection = 1.005;
+        const gain = maxGain * (scale / maxScale) * Math.pow((100 - value) / 100, powerCorrection);
+        return parseFloat(Math.max(1, Math.min(value + gain, 100)).toFixed(3));
+    }, [stats]);
+
+    const decreaseStat = useCallback((stat: keyof Omit<Stats, "uid" | "lastUpdated" | "xp" | "level" | "gold" | "gems">, scale: number) => {
+        const value = stats ? stats[stat] : 1;
+        const maxLoss = 2.5;
+        const maxScale = 5;
+        const powerCorrection = 1.005;
+        const loss = maxLoss * (scale / maxScale) * Math.pow((value - 1) / 100, powerCorrection);
+        return parseFloat(Math.max(1, Math.min(value - loss, 100)).toFixed(3));
+    }, [stats]);
+
     return (
         <AuthContext.Provider value={{
             session,
@@ -263,7 +312,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             pinfo,
             stats,
             getInfo,
-            updateStats
+            updateStats,
+            addGold,
+            addXP,
+            increaseStat,
+            decreaseStat,
         }}>
             {children}
         </AuthContext.Provider>

@@ -1,5 +1,5 @@
-import { useState, createContext, useEffect, useContext } from "react"
-import { useAuth } from "./auth";
+import { useState, createContext, useEffect, useContext, ReactNode } from "react"
+import { Stats, useAuth } from "./auth";
 import { getDate } from "./math";
 import { supabase } from "./supabase";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,10 @@ import { Stattype } from "./types";
 import { RRule } from 'rrule'
 import { DEFAULT_ACTIVITIES } from "./constants";
 import { icons, LucideIcon, LucideProps } from 'lucide-react-native';
+import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
+import { View, Text } from "react-native";
+import { Sparkles } from "~/lib/icons/Sparkles";
+import { Coins } from "~/lib/icons/Coins";
 
 export type ToImp = Exclude<Stattype, 'discipline'>;
 export type ActivityType = 'positive' | 'negative';
@@ -62,6 +66,7 @@ interface HabitContextType {
     activities: Record<string, Activity>;
     setActivity: (activityId: string, activity: Activity) => void;
     removeActivity: (activityId: string) => void;
+    logActivity: (activityId: string, discipline?: -1 | 0 | 1) => void;
     habits: Record<string, Habit>;
     currentHabits: Record<string, Habit>;
     setHabit: (habitId: string, habit: Habit) => void;
@@ -88,6 +93,7 @@ const HabitContext = createContext<HabitContextType>({
     activities: defaultActivities,
     setActivity: () => { },
     removeActivity: () => { },
+    logActivity: () => { },
     habits: {},
     currentHabits: {},
     setHabit: () => { },
@@ -100,7 +106,7 @@ const HabitContext = createContext<HabitContextType>({
 });
 
 export default function HabitProvider({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
+    const { user, addGold, addXP, increaseStat, decreaseStat, updateStats } = useAuth();
 
     const [activities, setActivities] = useState<Record<string, Activity>>(defaultActivities);
     const [habits, setHabits] = useState<Record<string, Habit>>({});
@@ -337,11 +343,92 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         }));
     };
 
+    const logActivity = (activityId: string, discipline?: -1 | 0 | 1) => {
+        if (!discipline) discipline = 0;
+        const activity = activities[activityId];
+        var xpGain = 10;
+        var goldGain = 20;
+        switch (activity.difficulty) {
+            case 1:
+                xpGain = 2;
+                goldGain = 5;
+                break;
+            case 2:
+                xpGain = 5;
+                goldGain = 10;
+                break;
+            case 3:
+                xpGain = 10;
+                goldGain = 20;
+                break;
+            case 4:
+                xpGain = 17;
+                goldGain = 35;
+                break;
+            case 5:
+                xpGain = 25;
+                goldGain = 50;
+                break;
+        }
+        if (activity.type === 'negative') {
+            xpGain = -xpGain;
+            goldGain = 0;
+        }
+        const newStats: Partial<Stats> = {
+            ...addXP?.(xpGain),
+            gold: addGold?.(goldGain),
+        };
+        activity.stats.forEach(stat => {
+            newStats[stat] = activity.type === "negative" ? decreaseStat?.(stat, activity.difficulty) : increaseStat?.(stat, activity.difficulty);
+        });
+        if (discipline !== 0) {
+            newStats.discipline = discipline === 1 ? increaseStat?.("discipline", activity.difficulty) : decreaseStat?.("discipline", activity.difficulty);
+        }
+        updateStats?.(newStats).then(() => {
+            toast.success("", {
+                position: ToastPosition.BOTTOM,
+                customToast: (toast) => {
+                    const Indicator = ({ text, icon }: { text: string; icon: ReactNode }) => {
+                        return (
+                            <View className="flex-row items-center">
+                                <Text>{text}</Text>
+                                {icon}
+                            </View>
+                        );
+                    }
+
+                    const DiscIcon = statIcon("discipline");
+
+                    return (
+                        <View className="flex-row items-center bg-foreground gap-4  px-4 justify-center" style={{
+                            height: toast.height,
+                            width: toast.width,
+                            borderRadius: 8,
+                        }}>
+                            <Indicator key="xp" text={`${xpGain > 0 ? "+" : ""}${xpGain}`} icon={<Sparkles />} />
+                            {goldGain > 0 && (
+                                <Indicator key="gold" text={`${goldGain > 0 ? "+" : ""}${goldGain}`} icon={<Coins />} />
+                            )}
+                            {discipline !== 0 && (
+                                <Indicator key="discipline" text={`${discipline === 1 ? "+" : "-"}${activity.difficulty}`} icon={<DiscIcon />} />
+                            )}
+                            {activity.stats.map((stat) => {
+                                const Icon = statIcon(stat);
+                                return <Indicator key={stat} text={`${activity.type === "negative" ? "-" : "+"}`} icon={<Icon />} />
+                            })}
+                        </View>
+                    )
+                }
+            });
+        });
+    }
+
     return (
         <HabitContext.Provider value={{
             activities,
             setActivity,
             removeActivity,
+            logActivity,
             habits,
             currentHabits,
             setHabit,
