@@ -21,6 +21,12 @@
 
         "__habits__": "__habits__",
         "habits": "Habits",
+        "todos": "Tasks",
+        "hdt": "Habits Today",
+        "allHabits": "All Habits",
+        "noTodos": "No tasks remaining!",
+        "noHabits": "No habits found. Start by adding a new habit!",
+        "noHDT": "No habits today, consider adding one!",
 
         "__create__": "__create__",
         "newAct": "New Activity",

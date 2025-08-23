@@ -55,7 +55,6 @@ export type Todo = {
 
 export type HabitData = {
     [date: string]: {
-        calculated: boolean;
         habits: {
             [habitId: string]: boolean;
         }
@@ -122,26 +121,45 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         if (!user) return;
 
         const fetchData = async () => {
-            const localData = await AsyncStorage.multiGet([
-                `${user.id}-activities`,
-                `${user.id}-habits`,
-                `${user.id}-currentHabits`,
-                `${user.id}-todos`,
-                `${user.id}-habitData`,
-                `${user.id}-lastUpdated`
-            ]).then((data) => {
-                for (const [key, value] of data) {
-                    if (!value) return null;
-                }
-
-                return data.reduce((acc, [key, value]) => {
-                    if (value) {
-                        const a = key.split('-');
-                        acc[a[a.length - 1]] = JSON.parse(value);
-                    }
-                    return acc;
-                }, {} as Record<string, any>) as UserData;
+            const lActivities = await AsyncStorage.getItem(`${user.id}-activities`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as Record<string, Activity>;
             });
+            const lHabits = await AsyncStorage.getItem(`${user.id}-habits`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as Record<string, Habit>;
+            });
+            const lCurrentHabits = await AsyncStorage.getItem(`${user.id}-currentHabits`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as Record<string, Habit>;
+            });
+            const lTodos = await AsyncStorage.getItem(`${user.id}-todos`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data, (key, value) => {
+                    if (key === "due" || key === "reminder") {
+                        return new Date(value);
+                    }
+                    return value;
+                }) as Record<string, Todo>;
+            });
+            const lHabitData = await AsyncStorage.getItem(`${user.id}-habitData`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as HabitData;
+            });
+            const lLastUpdated = await AsyncStorage.getItem(`${user.id}-lastUpdated`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as number;
+            });
+
+            const localData: UserData = {
+                activities: lActivities || {},
+                habits: lHabits || {},
+                currentHabits: lCurrentHabits || {},
+                todos: lTodos || {},
+                habitData: lHabitData || {},
+                lastUpdated: lLastUpdated || 0,
+            };
+
             const { data: luData } = await supabase.from("data").select("lastUpdated").eq("uid", user.id).single();
 
             if (luData) setRemoteLU(luData.lastUpdated);
@@ -212,7 +230,31 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         fetchData();
     }, [user]);
 
+    const updateLocalData = async () => {
+        if (!user) return;
+
+        const userData: UserData = {
+            activities,
+            habits,
+            currentHabits,
+            todos,
+            habitData,
+            lastUpdated: getDate(),
+        };
+
+        await AsyncStorage.multiSet([
+            [`${user.id}-activities`, JSON.stringify(userData.activities)],
+            [`${user.id}-habits`, JSON.stringify(userData.habits)],
+            [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
+            [`${user.id}-todos`, JSON.stringify(userData.todos)],
+            [`${user.id}-habitData`, JSON.stringify(userData.habitData)],
+            [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
+        ]);
+    };
+
     const updateData = async () => {
+        await updateLocalData();
+
         const createSelfTimeout = (time?: number) => {
             if (updateTimeout) clearTimeout(updateTimeout);
             return setTimeout(() => {
@@ -233,15 +275,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             habitData,
             lastUpdated: getDate(),
         };
-
-        await AsyncStorage.multiSet([
-            [`${user.id}-activities`, JSON.stringify(userData.activities)],
-            [`${user.id}-habits`, JSON.stringify(userData.habits)],
-            [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
-            [`${user.id}-todos`, JSON.stringify(userData.todos)],
-            [`${user.id}-habitData`, JSON.stringify(userData.habitData)],
-            [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
-        ]);
 
         var lu = remoteLU;
         if (!remoteLU) {
@@ -276,8 +309,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             ...prevActivities,
             [activityId]: activity,
         }));
-
-        updateData();
     };
 
     const removeActivity = (activityId: string) => {
@@ -286,8 +317,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             delete newActivities[activityId];
             return newActivities;
         });
-
-        updateData();
     };
 
     const setHabit = (habitId: string, habit: Habit) => {
@@ -299,8 +328,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             ...prevCurrent,
             [habitId]: habit,
         }));
-
-        updateData();
     };
 
     const removeHabit = (habitId: string) => {
@@ -309,8 +336,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             delete newCurrent[habitId];
             return newCurrent;
         });
-
-        updateData();
     };
 
     const setTodo = (todoId: string, todo: Todo) => {
@@ -318,8 +343,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             ...prevTodos,
             [todoId]: todo,
         }));
-
-        updateData();
     };
 
     const removeTodo = (todoId: string) => {
@@ -328,8 +351,6 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             delete newTodos[todoId];
             return newTodos;
         });
-
-        updateData();
     };
 
     const updateHabitData = (habitId: string, value: boolean) => {
@@ -342,6 +363,10 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             },
         }));
     };
+
+    useEffect(() => {
+        updateData();
+    }, [activities, habits, currentHabits, todos, habitData]);
 
     const logActivity = (activityId: string, discipline?: -1 | 0 | 1) => {
         if (!discipline) discipline = 0;
