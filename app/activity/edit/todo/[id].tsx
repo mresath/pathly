@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Separator } from '~/components/ui/separator';
 import { FlatList } from 'react-native-gesture-handler';
 import DatePicker from 'react-native-date-picker';
-import { DATE_OPTIONS, NAV_THEME } from '~/lib/constants';
+import { DATE_OPTIONS } from '~/lib/constants';
 import { Checkbox } from '~/components/ui/checkbox';
 import { XCircle } from '~/lib/icons/XCircle';
 import { Info } from '~/lib/icons/Info';

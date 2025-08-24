@@ -10,7 +10,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mresath.pathly",
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "processing",
+          "fetch"
+        ]
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -52,7 +58,8 @@
             "image": "./assets/logo.png"
           }
         }
-      ]
+      ],
+      "expo-background-task"
     ],
     "scheme": "pathly"
   }

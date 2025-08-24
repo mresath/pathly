@@ -44,13 +44,13 @@ export default function Create() {
   const [radioValue, setRadioValue] = useState<string>(!habit.rule.origOptions.byweekday ? "repeat" : "on");
   const [repeat, setRepeat] = useState(habit.rule.options.interval || 1);
   const [on, setOn] = useState<Record<string, boolean>>({
-    MO: habit.rule.options.byweekday.some(day => day === 1),
-    TU: habit.rule.options.byweekday.some(day => day === 2),
-    WE: habit.rule.options.byweekday.some(day => day === 3),
-    TH: habit.rule.options.byweekday.some(day => day === 4),
-    FR: habit.rule.options.byweekday.some(day => day === 5),
-    SA: habit.rule.options.byweekday.some(day => day === 6),
-    SU: habit.rule.options.byweekday.some(day => day === 7),
+    MO: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 0) : false,
+    TU: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 1) : false,
+    WE: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 2) : false,
+    TH: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 3) : false,
+    FR: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 4) : false,
+    SA: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 5) : false,
+    SU: habit.rule.options.byweekday ? habit.rule.options.byweekday.some(day => day === 6) : false,
   });
   const rule = useMemo(() => {
     if (radioValue === "repeat") {

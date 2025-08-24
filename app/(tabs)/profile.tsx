@@ -11,6 +11,7 @@ export default function Tab() {
 
   return (
     <View>
+      {/*TODO*/}
       <RadarChart
         data={[
           stats?.skill || 50,

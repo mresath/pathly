@@ -289,7 +289,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const value = stats ? stats[stat] : 1;
         const maxGain = 2.5;
         const maxScale = 5;
-        const powerCorrection = 1.005;
+        const powerCorrection = stat !== "discipline" ? 1.005 : 1.01;
         const gain = maxGain * (scale / maxScale) * Math.pow((100 - value) / 100, powerCorrection);
         return parseFloat(Math.max(1, Math.min(value + gain, 100)).toFixed(3));
     }, [stats]);

@@ -69,24 +69,24 @@ export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <SettingsProvider>
-          <AuthProvider>
-            <HabitProvider>
-              <SafeAreaProvider>
-                <GestureHandlerRootView>
-                  <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-                  <Screens />
-                  <PortalHost />
-                  <Toasts
-                    overrideDarkMode={isDarkColorScheme}
-                    globalAnimationType="spring"
-                    globalAnimationConfig={{ duration: 300 }}
-                  />
-                </GestureHandlerRootView>
-              </SafeAreaProvider>
-            </HabitProvider>
-          </AuthProvider>
-        </SettingsProvider>
+          <SettingsProvider>
+            <AuthProvider>
+              <HabitProvider>
+                <SafeAreaProvider>
+                  <GestureHandlerRootView>
+                    <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+                    <Screens />
+                    <PortalHost />
+                    <Toasts
+                      overrideDarkMode={isDarkColorScheme}
+                      globalAnimationType="spring"
+                      globalAnimationConfig={{ duration: 300 }}
+                    />
+                  </GestureHandlerRootView>
+                </SafeAreaProvider>
+              </HabitProvider>
+            </AuthProvider>
+          </SettingsProvider>
       </ThemeProvider>
     </I18nextProvider>
   );

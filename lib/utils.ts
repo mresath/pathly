@@ -7,8 +7,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const startOfDay = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export const today = () => {
-  return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  return startOfDay(new Date());
 }
 
 export const useDimensions = () => {

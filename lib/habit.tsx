@@ -11,6 +11,7 @@ import { toast, ToastPosition } from "@backpackapp-io/react-native-toast";
 import { View, Text } from "react-native";
 import { Sparkles } from "~/lib/icons/Sparkles";
 import { Coins } from "~/lib/icons/Coins";
+import { startOfDay, today } from "./utils";
 
 export type ToImp = Exclude<Stattype, 'discipline'>;
 export type ActivityType = 'positive' | 'negative';
@@ -55,6 +56,7 @@ export type Todo = {
 
 export type HabitData = {
     [date: string]: {
+        calculated: boolean;
         habits: {
             [habitId: string]: boolean;
         }
@@ -75,6 +77,8 @@ interface HabitContextType {
     removeTodo: (todoId: string) => void;
     habitData: HabitData;
     updateHabitData: (habitId: string, value: boolean) => void;
+    appendHabitData: (value: HabitData) => void;
+    calculateStreak: (habitId: string, date?: Date) => number;
 }
 
 interface UserData {
@@ -102,10 +106,35 @@ const HabitContext = createContext<HabitContextType>({
     removeTodo: () => { },
     habitData: {},
     updateHabitData: () => { },
+    appendHabitData: () => { },
+    calculateStreak: () => 0,
 });
+
+const habitReplacer = (key: string, value: any) => {
+    if (key === "rule" || key === "reminder") {
+        return value ? (value as RRule).toString() : undefined;
+    }
+    return value;
+}
+
+const todoReviver = (key: string, value: any) => {
+    if (key === "due" || key === "reminder") {
+        return value ? new Date(value) : undefined;
+    }
+    return value;
+}
+
+const habitReviver = (key: string, value: any) => {
+    if (key === "rule" || key === "reminder") {
+        return value ? RRule.fromString(value) : undefined;
+    }
+    return value;
+}
 
 export default function HabitProvider({ children }: { children: React.ReactNode }) {
     const { user, addGold, addXP, increaseStat, decreaseStat, updateStats } = useAuth();
+
+    const [init, setInit] = useState(false);
 
     const [activities, setActivities] = useState<Record<string, Activity>>(defaultActivities);
     const [habits, setHabits] = useState<Record<string, Habit>>({});
@@ -117,6 +146,12 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
     const [remoteLU, setRemoteLU] = useState<number | null>(null);
     const [updateTimeout, setUpdateTimeout] = useState<number | null>(null);
 
+    const [latestStreaks, setLatestStreaks] = useState<Record<string, Record<string, number>>>({});
+    useEffect(() => {
+        if (!user) return;
+        AsyncStorage.setItem(`${user.id}-latestStreaks`, JSON.stringify(latestStreaks));
+    }, [latestStreaks]);
+
     useEffect(() => {
         if (!user) return;
 
@@ -127,20 +162,15 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             });
             const lHabits = await AsyncStorage.getItem(`${user.id}-habits`).then((data) => {
                 if (!data) return null;
-                return JSON.parse(data) as Record<string, Habit>;
+                return JSON.parse(data, habitReviver) as Record<string, Habit>;
             });
             const lCurrentHabits = await AsyncStorage.getItem(`${user.id}-currentHabits`).then((data) => {
                 if (!data) return null;
-                return JSON.parse(data) as Record<string, Habit>;
+                return JSON.parse(data, habitReviver) as Record<string, Habit>;
             });
             const lTodos = await AsyncStorage.getItem(`${user.id}-todos`).then((data) => {
                 if (!data) return null;
-                return JSON.parse(data, (key, value) => {
-                    if (key === "due" || key === "reminder") {
-                        return new Date(value);
-                    }
-                    return value;
-                }) as Record<string, Todo>;
+                return JSON.parse(data, todoReviver) as Record<string, Todo>;
             });
             const lHabitData = await AsyncStorage.getItem(`${user.id}-habitData`).then((data) => {
                 if (!data) return null;
@@ -150,6 +180,12 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                 if (!data) return null;
                 return JSON.parse(data) as number;
             });
+
+            const latestStreaks = await AsyncStorage.getItem(`${user.id}-latestStreaks`).then((data) => {
+                if (!data) return null;
+                return JSON.parse(data) as Record<string, Record<string, number>>;
+            });
+            setLatestStreaks(latestStreaks || {});
 
             const localData: UserData = {
                 activities: lActivities || {},
@@ -171,10 +207,14 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                 };
 
                 const { data } = await supabase.from("data").select("data").eq("uid", user.id).single();
-                if (!data) return;
+                if (!data) {
+                    return;
+                };
 
                 const userData: UserData = data.data;
-                if (!userData) return;
+                if (!userData) {
+                    return;
+                };
 
                 setActivities(userData.activities);
                 setHabits(userData.habits);
@@ -185,8 +225,8 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
 
                 await AsyncStorage.multiSet([
                     [`${user.id}-activities`, JSON.stringify(userData.activities || defaultActivities)],
-                    [`${user.id}-habits`, JSON.stringify(userData.habits)],
-                    [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
+                    [`${user.id}-habits`, JSON.stringify(userData.habits, habitReplacer)],
+                    [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits, habitReplacer)],
                     [`${user.id}-todos`, JSON.stringify(userData.todos)],
                     [`${user.id}-habitData`, JSON.stringify(userData.habitData)],
                     [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
@@ -203,10 +243,14 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                     if (luData && localData.lastUpdated > luData.lastUpdated) await supabase.from("data").upsert({ uid: user.id, lastUpdated: localData.lastUpdated, data: localData });
                 } else {
                     const { data } = await supabase.from("data").select("data").eq("uid", user.id).single();
-                    if (!data) return;
+                    if (!data) {
+                        return;
+                    };
 
                     const userData: UserData = data.data;
-                    if (!userData) return;
+                    if (!userData) {
+                        return;
+                    };
 
                     setActivities(userData.activities || defaultActivities);
                     setHabits(userData.habits || {});
@@ -217,8 +261,8 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
 
                     await AsyncStorage.multiSet([
                         [`${user.id}-activities`, JSON.stringify(userData.activities)],
-                        [`${user.id}-habits`, JSON.stringify(userData.habits)],
-                        [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
+                        [`${user.id}-habits`, JSON.stringify(userData.habits, habitReplacer)],
+                        [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits, habitReplacer)],
                         [`${user.id}-todos`, JSON.stringify(userData.todos)],
                         [`${user.id}-habitData`, JSON.stringify(userData.habitData)],
                         [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
@@ -227,7 +271,11 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             }
         }
 
-        fetchData();
+        fetchData().then(() => {
+            setInit(true);
+        }).catch((error) => {
+            console.error("Error fetching data:", error);
+        });
     }, [user]);
 
     const updateLocalData = async () => {
@@ -244,8 +292,8 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
 
         await AsyncStorage.multiSet([
             [`${user.id}-activities`, JSON.stringify(userData.activities)],
-            [`${user.id}-habits`, JSON.stringify(userData.habits)],
-            [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits)],
+            [`${user.id}-habits`, JSON.stringify(userData.habits, habitReplacer)],
+            [`${user.id}-currentHabits`, JSON.stringify(userData.currentHabits, habitReplacer)],
             [`${user.id}-todos`, JSON.stringify(userData.todos)],
             [`${user.id}-habitData`, JSON.stringify(userData.habitData)],
             [`${user.id}-lastUpdated`, JSON.stringify(userData.lastUpdated)],
@@ -364,12 +412,22 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
         }));
     };
 
+    const appendHabitData = (value: HabitData) => {
+        setHabitData((prevData) => {
+            return {
+                ...prevData,
+                ...value
+            };
+        });
+    }
+
     useEffect(() => {
-        updateData();
+        if (init) updateData();
     }, [activities, habits, currentHabits, todos, habitData]);
 
-    const logActivity = (activityId: string, discipline?: -1 | 0 | 1) => {
-        if (!discipline) discipline = 0;
+    const logActivity = (activityId: string, neglected?: -1 | 0 | 1, tst?: boolean) => {
+        if (neglected === undefined) neglected = 0;
+        if (tst === undefined) tst = true;
         const activity = activities[activityId];
         var xpGain = 10;
         var goldGain = 20;
@@ -395,7 +453,7 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
                 goldGain = 50;
                 break;
         }
-        if (activity.type === 'negative') {
+        if ((activity.type === 'negative') !== (neglected === 1)) {
             xpGain = -xpGain;
             goldGain = 0;
         }
@@ -403,49 +461,109 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             ...addXP?.(xpGain),
             gold: addGold?.(goldGain),
         };
-        activity.stats.forEach(stat => {
-            newStats[stat] = activity.type === "negative" ? decreaseStat?.(stat, activity.difficulty) : increaseStat?.(stat, activity.difficulty);
-        });
-        if (discipline !== 0) {
-            newStats.discipline = discipline === 1 ? increaseStat?.("discipline", activity.difficulty) : decreaseStat?.("discipline", activity.difficulty);
-        }
-        updateStats?.(newStats).then(() => {
-            toast.success("", {
-                position: ToastPosition.BOTTOM,
-                customToast: (toast) => {
-                    const Indicator = ({ text, icon }: { text: string; icon: ReactNode }) => {
-                        return (
-                            <View className="flex-row items-center">
-                                <Text>{text}</Text>
-                                {icon}
-                            </View>
-                        );
-                    }
 
-                    const DiscIcon = statIcon("discipline");
-
-                    return (
-                        <View className="flex-row items-center bg-foreground gap-4  px-4 justify-center" style={{
-                            height: toast.height,
-                            width: toast.width,
-                            borderRadius: 8,
-                        }}>
-                            <Indicator key="xp" text={`${xpGain > 0 ? "+" : ""}${xpGain}`} icon={<Sparkles />} />
-                            {goldGain > 0 && (
-                                <Indicator key="gold" text={`${goldGain > 0 ? "+" : ""}${goldGain}`} icon={<Coins />} />
-                            )}
-                            {discipline !== 0 && (
-                                <Indicator key="discipline" text={`${discipline === 1 ? "+" : "-"}${activity.difficulty}`} icon={<DiscIcon />} />
-                            )}
-                            {activity.stats.map((stat) => {
-                                const Icon = statIcon(stat);
-                                return <Indicator key={stat} text={`${activity.type === "negative" ? "-" : "+"}`} icon={<Icon />} />
-                            })}
-                        </View>
-                    )
-                }
+        const func = ((activity.type === 'negative') !== (neglected === 1)) ? decreaseStat : increaseStat;
+        if (func) {
+            activity.stats.forEach(stat => {
+                newStats[stat] = func(stat, activity.difficulty);
             });
+            newStats["discipline"] = func("discipline", activity.difficulty);
+        }
+
+        updateStats?.(newStats).then(() => {
+            if (tst) {
+                toast.success("", {
+                    position: ToastPosition.BOTTOM,
+                    customToast: (toast) => {
+                        const Indicator = ({ text, icon }: { text: string; icon: ReactNode }) => {
+                            return (
+                                <View className="flex-row items-center">
+                                    <Text>{text}</Text>
+                                    {icon}
+                                </View>
+                            );
+                        }
+
+                        const DiscIcon = statIcon("discipline");
+
+                        return (
+                            <View className="flex-row items-center bg-foreground gap-4  px-4 justify-center" style={{
+                                height: toast.height,
+                                width: toast.width,
+                                borderRadius: 8,
+                            }}>
+                                <Indicator key="xp" text={`${xpGain > 0 ? "+" : ""}${xpGain}`} icon={<Sparkles />} />
+                                {goldGain > 0 && (
+                                    <Indicator key="gold" text={`${goldGain > 0 ? "+" : ""}${goldGain}`} icon={<Coins />} />
+                                )}
+                                {neglected !== 0 && (
+                                    <Indicator key="discipline" text={`${neglected === 1 ? "+" : "-"}${activity.difficulty}`} icon={<DiscIcon />} />
+                                )}
+                                {activity.stats.map((stat) => {
+                                    const Icon = statIcon(stat);
+                                    return <Indicator key={stat} text={`${activity.type === "negative" ? "-" : "+"}`} icon={<Icon />} />
+                                })}
+                            </View>
+                        )
+                    }
+                });
+            }
         });
+    };
+
+    const calculateUntilToday = () => {
+        if (!user) return;
+        const oneDay = 24 * 60 * 60 * 1000;
+        var currentDate = new Date(today().getTime() - oneDay);
+        var dtString = currentDate.toISOString().split("T")[0];
+        while ((!habitData[dtString] || !habitData[dtString].calculated) && dtString >= user.created_at.split("T")[0]) {
+            for (const [id, habit] of Object.entries(currentHabits)) {
+                if (!habitData[dtString]) habitData[dtString] = { calculated: false, habits: {} };
+                habitData[dtString].habits[id] = habitData[dtString].habits[id] || false;
+                if (habitData[dtString].habits[id]) {
+                    logActivity(habit.activityId, -1, false);
+                } else {
+                    if (habit.neglection) {
+                        logActivity(habit.activityId, 1, false);
+                    }
+                }
+            }
+            habitData[dtString].calculated = true;
+
+            currentDate = new Date(currentDate.getTime() - oneDay);
+            dtString = currentDate.toISOString().split("T")[0];
+        }
+
+        //TODO: check for neglected todos
+        //TODO: reminders
+    }
+    useEffect(() => {
+        calculateUntilToday();
+    }, [init]);
+
+    const calculateStreak: ((habitId: string, date?: Date) => number) = (habitId: string, date?: Date) => {
+        const oneDay = 24 * 60 * 60 * 1000;
+        var currentDate = date ? startOfDay(date) : today();
+        var dtString = currentDate.toISOString().split("T")[0];
+
+        if (!latestStreaks[habitId]) latestStreaks[habitId] = {};
+
+        var streak = 0;
+        while (habitData[dtString] && habitData[dtString].habits[habitId]) {
+            if (latestStreaks[habitId][dtString]) {
+                streak += latestStreaks[habitId][dtString];
+                break;
+            }
+
+            streak++;
+            currentDate = new Date(currentDate.getTime() - oneDay);
+            dtString = currentDate.toISOString().split("T")[0];
+        }
+
+        latestStreaks[habitId] = {
+            [dtString]: streak
+        };
+        return streak;
     }
 
     return (
@@ -463,6 +581,8 @@ export default function HabitProvider({ children }: { children: React.ReactNode 
             removeTodo,
             habitData,
             updateHabitData,
+            appendHabitData,
+            calculateStreak,
         }}>
             {children}
         </HabitContext.Provider>
